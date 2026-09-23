@@ -1,0 +1,2173 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Marcador de Hockey en Vivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===== Marcador en vivo — torneo de hockey ===== */
+
+:root{
+  --bg:#F7F4F3;
+  --surface:#FFFFFF;
+  --surface-2:#F1E7E6;
+  --border:#E3D2D0;
+  --ink:#241414;
+  --ink-muted:#6B5958;
+  --turf-700:#7A1418;
+  --turf-600:#EA2427;
+  --turf-500:#FF5449;
+  --gold:#D99A00;
+  --gold-soft:#F6E7BF;
+  --gold-ink:#5C4200;
+  --plata:#3E6FA8;
+  --plata-soft:#DCE9F6;
+  --plata-ink:#1F3A57;
+  --coral:#D9502A;
+  --coral-soft:#F7DCD1;
+  --win:#1F7A43;
+  --win-soft:#DFF0E4;
+  --draw:#8A7A22;
+  --draw-soft:#F1EBCF;
+  --loss:#B23A3A;
+  --loss-soft:#F6DEDE;
+  --shadow:0 1px 2px rgba(40,10,10,.07), 0 8px 24px -12px rgba(40,10,10,.2);
+  --radius:14px;
+  --scale:1;
+}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#180E0D;
+    --surface:#211615;
+    --surface-2:#2A1A19;
+    --border:#3C2A28;
+    --ink:#F2E9E8;
+    --ink-muted:#B09B99;
+    --turf-700:#2A0A0A;
+    --turf-600:#FF5449;
+    --turf-500:#FF8478;
+    --gold:#EFB93B;
+    --gold-soft:#3A2E0E;
+    --gold-ink:#F6E2A6;
+    --plata:#7FA8E0;
+    --plata-soft:#1E2E40;
+    --plata-ink:#D7E6F5;
+    --coral:#FF7A52;
+    --coral-soft:#3A2016;
+    --win:#3FAE71;
+    --win-soft:#173425;
+    --draw:#CBB84E;
+    --draw-soft:#332C10;
+    --loss:#E56A6A;
+    --loss-soft:#3A1D1D;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#180E0D;
+  --surface:#211615;
+  --surface-2:#2A1A19;
+  --border:#3C2A28;
+  --ink:#F2E9E8;
+  --ink-muted:#B09B99;
+  --turf-700:#2A0A0A;
+  --turf-600:#FF5449;
+  --turf-500:#FF8478;
+  --gold:#EFB93B;
+  --gold-soft:#3A2E0E;
+  --gold-ink:#F6E2A6;
+  --plata:#7FA8E0;
+  --plata-soft:#1E2E40;
+  --plata-ink:#D7E6F5;
+  --coral:#FF7A52;
+  --coral-soft:#3A2016;
+  --win:#3FAE71;
+  --win-soft:#173425;
+  --draw:#CBB84E;
+  --draw-soft:#332C10;
+  --loss:#E56A6A;
+  --loss-soft:#3A1D1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size:15px;
+  line-height:1.45;
+}
+h1,h2,h3{text-wrap:balance}
+img{max-width:100%}
+button{font-family:inherit}
+.mono{font-family:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace}
+.tabular{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+
+/* ---------- layout shell ---------- */
+.wrap{max-width:1080px; margin:0 auto; padding:0 20px 96px}
+
+/* ---------- header / scoreboard bar ---------- */
+.scorebar{
+  background:linear-gradient(180deg, var(--turf-700), var(--turf-600));
+  color:#F3F7EF;
+  border-bottom:3px solid var(--gold);
+  position:sticky; top:0; z-index:30;
+}
+.scorebar-inner{
+  max-width:1080px; margin:0 auto; padding:16px 20px 14px;
+  display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px 20px;
+}
+.brand-block{display:flex; align-items:center; gap:14px}
+.sponsor-logo{
+  height:50px; width:auto; border-radius:9px; display:block;
+  border:2px solid rgba(255,255,255,.85);
+  box-shadow:0 4px 12px -4px rgba(0,0,0,.5);
+}
+.brand-eyebrow{
+  font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--gold); margin:0 0 4px;
+}
+.brand-title{
+  font-family:"Big Shoulders Display", "Archivo Black", sans-serif;
+  font-weight:800; text-transform:uppercase; letter-spacing:.01em;
+  font-size:clamp(26px, 4vw, 40px); line-height:.98; margin:0;
+}
+.brand-sub{margin:6px 0 0; font-size:13.5px; color:#F0D8D5; max-width:52ch}
+.scorebar-meta{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.updated-chip{
+  font-family:"IBM Plex Mono", monospace; font-size:11.5px; color:#F0D8D5;
+  border:1px solid rgba(255,255,255,.22); border-radius:999px; padding:5px 10px;
+}
+.live-chip{
+  display:inline-flex; align-items:center; gap:7px;
+  background:rgba(217,80,42,.18); border:1px solid var(--coral);
+  color:#FFDFD2; font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600;
+  border-radius:999px; padding:5px 11px 5px 9px;
+}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--coral); box-shadow:0 0 0 0 rgba(217,80,42,.6); animation:pulse 1.8s infinite}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(217,80,42,.55)}
+  70%{box-shadow:0 0 0 8px rgba(217,80,42,0)}
+  100%{box-shadow:0 0 0 0 rgba(217,80,42,0)}
+}
+.tv-btn{
+  border:1px solid rgba(255,255,255,.28); background:rgba(255,255,255,.06); color:#F3F7EF;
+  border-radius:10px; padding:7px 12px; font-size:12.5px; font-weight:600; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.tv-btn:hover{background:rgba(255,255,255,.14)}
+
+/* category tabs */
+.tabbar{max-width:1080px; margin:0 auto; padding:10px 20px 0; display:flex; gap:8px; flex-wrap:wrap}
+.tab{
+  border:1px solid rgba(255,255,255,.22); background:transparent; color:#F1DCDA;
+  padding:8px 14px; border-radius:999px 999px 0 0; font-size:13.5px; font-weight:600; cursor:pointer;
+  border-bottom:none;
+}
+.tab[aria-selected="true"]{background:var(--bg); color:var(--turf-600); border-color:var(--bg)}
+.tab-info{margin-left:auto; border-style:dashed; opacity:.9}
+.tab-info[aria-selected="true"]{opacity:1}
+
+/* ---------- section shell ---------- */
+.section{margin-top:28px}
+
+/* ---------- "¿Cómo se juega?" explainer ---------- */
+.mod-cat-picker{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px}
+.mod-cat-btn{
+  border:1px solid var(--border); background:var(--surface); color:var(--ink-muted);
+  padding:8px 16px; border-radius:999px; font-size:13.5px; font-weight:700; cursor:pointer;
+}
+.mod-cat-btn:hover{background:var(--surface-2)}
+.mod-cat-btn[aria-selected="true"]{background:var(--turf-600); color:#fff; border-color:var(--turf-600)}
+.mod-card{
+  display:flex; gap:14px; align-items:flex-start;
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:16px 18px; margin-bottom:14px;
+}
+.mod-step{
+  flex:none; width:30px; height:30px; border-radius:50%; background:var(--turf-600); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-family:"Big Shoulders Display", sans-serif; font-weight:800; font-size:15px;
+}
+.mod-copy{min-width:0}
+.mod-copy h4{
+  margin:0 0 6px; font-family:"Big Shoulders Display", sans-serif; font-weight:700;
+  text-transform:uppercase; letter-spacing:.01em; font-size:16px; color:var(--turf-600);
+}
+.mod-copy p{margin:0 0 10px; font-size:13.5px; color:var(--ink); line-height:1.55}
+.mod-copy p:last-child{margin-bottom:0}
+.mod-list{margin:0 0 10px; padding-left:18px; font-size:13.5px; color:var(--ink); line-height:1.6}
+.mod-list li{margin-bottom:4px}
+.mod-list:last-child{margin-bottom:0}
+.mod-flow{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:8px 0}
+.mod-flow:last-child{margin-bottom:0}
+.mod-chip{
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  background:var(--surface-2); border:1px solid var(--border); border-radius:10px;
+  padding:8px 12px; font-weight:700; font-size:13px; color:var(--ink); text-align:center;
+}
+.mod-chip small{font-weight:500; font-size:10.5px; color:var(--ink-muted)}
+.mod-chip-result{background:var(--surface); border:1px solid var(--turf-600); color:var(--turf-600)}
+.mod-chip-gold{background:var(--gold-soft); border-color:var(--gold); color:var(--gold-ink)}
+.mod-chip-plata{background:var(--plata-soft); border-color:var(--plata); color:var(--plata-ink)}
+.mod-chip-bronze{background:var(--coral-soft); border-color:var(--coral); color:var(--ink)}
+.mod-arrow{font-size:20px; color:var(--ink-muted)}
+
+/* ---------- cruce diagram (esquema de cruce de posiciones) ---------- */
+.cross-diagram{width:100%; height:auto; margin:6px 0 4px; display:block}
+.cross-diagram .cd-col-label{
+  fill:var(--turf-600); font-family:"Big Shoulders Display", sans-serif; font-weight:700;
+  font-size:14px; text-transform:uppercase; letter-spacing:.02em; text-anchor:middle;
+}
+.cross-diagram .cd-box{fill:var(--surface); stroke:var(--border); stroke-width:1.5}
+.cross-diagram .cd-badge-bg{fill:var(--turf-600)}
+.cross-diagram .cd-badge-text{
+  fill:#fff; font-family:"Big Shoulders Display", sans-serif; font-weight:800; font-size:15px;
+  text-anchor:middle; dominant-baseline:central;
+}
+.cross-diagram .cd-line{stroke:var(--turf-600); stroke-width:2.5; opacity:.55}
+.cross-diagram .cd-line-straight{stroke:var(--ink-muted); stroke-width:2.5; opacity:.55; stroke-dasharray:5 4}
+
+/* variantes de color por copa, usadas en el cruce de 4 zonas (Sub 14) */
+.cross-diagram .cd-badge-bg.cd-badge-oro{fill:var(--gold)}
+.cross-diagram .cd-badge-text.cd-badge-text-oro{fill:var(--gold-ink)}
+.cross-diagram .cd-badge-bg.cd-badge-plata{fill:var(--plata)}
+.cross-diagram .cd-badge-text.cd-badge-text-plata{fill:#fff}
+.cross-diagram .cd-badge-bg.cd-badge-estimulo{fill:var(--coral)}
+.cross-diagram .cd-badge-text.cd-badge-text-estimulo{fill:#fff}
+.cross-diagram .cd-line-oro{stroke:var(--gold); opacity:.7}
+.cross-diagram .cd-line-plata{stroke:var(--plata); opacity:.7}
+.cross-diagram .cd-line-estimulo{stroke:var(--coral); opacity:.7}
+
+.cross-diagram-pair{display:flex; gap:18px; flex-wrap:wrap; margin:6px 0 10px}
+.cross-diagram-pair > div{flex:1; min-width:260px}
+.mod-example-label{margin:14px 0 4px !important; font-size:12.5px !important; font-weight:600; color:var(--ink-muted) !important; font-style:italic}
+.cd-legend{display:flex; gap:14px; flex-wrap:wrap; margin:2px 0 14px; font-size:12px; color:var(--ink-muted)}
+.cd-legend span{display:inline-flex; align-items:center; gap:6px}
+.cd-legend i{width:12px; height:12px; border-radius:3px; display:inline-block}
+.cd-legend i.cd-dot-oro{background:var(--gold)}
+.cd-legend i.cd-dot-plata{background:var(--plata)}
+.cd-legend i.cd-dot-estimulo{background:var(--coral)}
+
+.section-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px}
+.section-title{
+  font-family:"Big Shoulders Display", sans-serif; font-weight:700; text-transform:uppercase;
+  letter-spacing:.03em; font-size:19px; color:var(--turf-600); margin:0;
+}
+.section-note{font-size:12.5px; color:var(--ink-muted)}
+
+.zone-block{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:16px 16px 18px; margin-bottom:16px;
+}
+.zone-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px}
+.zone-name{
+  font-family:"Big Shoulders Display", sans-serif; font-size:17px; font-weight:700;
+  text-transform:uppercase; letter-spacing:.02em; color:var(--turf-600); margin:0;
+}
+.zone-tag{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-muted)}
+
+/* ---------- fixture by day ---------- */
+.day-block{margin-bottom:22px}
+.day-block:last-child{margin-bottom:0}
+.day-title{
+  font-family:"Big Shoulders Display", sans-serif; font-weight:700; text-transform:uppercase;
+  letter-spacing:.02em; font-size:15px; color:var(--ink-muted); margin:0 0 10px;
+  padding-bottom:6px; border-bottom:1px solid var(--border);
+}
+
+/* ---------- match cards ---------- */
+.match-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); gap:10px}
+.match-card{
+  border:1px solid var(--border); border-radius:12px; background:var(--surface);
+  padding:11px 12px 10px; position:relative;
+}
+.match-card.is-live{border-color:var(--coral)}
+.match-card-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px}
+.match-card-head .match-status{margin-bottom:0}
+.match-card-tags{display:inline-flex; align-items:center; gap:6px}
+.match-zone-tag{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:700; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--ink-muted); background:var(--surface-2);
+  border-radius:999px; padding:3px 8px;
+}
+.match-num-tag{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:700; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--turf-600); background:var(--coral-soft);
+  border-radius:999px; padding:3px 8px;
+}
+.match-status{
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:700; letter-spacing:.06em;
+  text-transform:uppercase; padding:3px 8px; border-radius:999px; margin-bottom:8px;
+}
+.match-status.pendiente{background:var(--surface-2); color:var(--ink-muted)}
+.match-status.vivo{background:var(--coral-soft); color:var(--coral)}
+.match-status.vivo .live-dot{background:var(--coral)}
+.match-status.final{background:var(--win-soft); color:var(--win)}
+.match-teams{display:flex; flex-direction:column; gap:5px}
+.match-row{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.match-team{font-size:14px; font-weight:600; color:var(--ink)}
+.match-row.win .match-team{color:var(--turf-600)}
+.match-score{
+  font-family:"Big Shoulders Display", sans-serif; font-weight:700; font-size:22px;
+  min-width:1.4em; text-align:right; color:var(--ink);
+}
+.match-row.win .match-score{color:var(--turf-600)}
+.match-meta{
+  margin-top:8px; padding-top:7px; border-top:1px dashed var(--border);
+  display:flex; justify-content:space-between; font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px; color:var(--ink-muted);
+}
+
+/* ---------- standings table ---------- */
+.standings-wrap{overflow-x:auto; margin-top:4px}
+table.standings{border-collapse:collapse; width:100%; min-width:480px; font-size:13px}
+table.standings th, table.standings td{padding:7px 8px; text-align:center; white-space:nowrap}
+table.standings th{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.04em; text-transform:uppercase;
+  color:var(--ink-muted); border-bottom:1px solid var(--border); font-weight:600;
+}
+table.standings td.team{text-align:left; font-weight:600}
+table.standings td.pts{font-weight:800; color:var(--turf-600)}
+table.standings tbody tr{border-bottom:1px solid var(--border)}
+table.standings tbody tr:last-child{border-bottom:none}
+table.standings tbody tr.qualifies td.team{position:relative; padding-left:14px}
+table.standings tbody tr.qualifies td.team::before{
+  content:""; position:absolute; left:0; top:3px; bottom:3px; width:3px; border-radius:2px; background:var(--gold);
+}
+.pos{font-family:"IBM Plex Mono",monospace; color:var(--ink-muted)}
+
+/* ---------- bracket ---------- */
+.bracket{display:flex; gap:22px; align-items:center; overflow-x:auto; padding:6px 2px 10px}
+.bracket-col{display:flex; flex-direction:column; gap:16px; min-width:210px}
+.bracket-col.final-col{justify-content:center}
+.bracket-label{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--ink-muted); margin-bottom:2px;
+}
+.bracket-slot{
+  border:1px solid var(--border); border-radius:10px; background:var(--surface); padding:9px 10px;
+  box-shadow:var(--shadow);
+}
+.bracket-slot .match-row{padding:2px 0}
+.bracket-slot .match-team{font-size:13px}
+.bracket-slot .match-score{font-size:18px}
+.bracket-placeholder{
+  border:1px dashed var(--border); border-radius:10px; padding:12px 10px; text-align:center;
+  font-size:12px; color:var(--ink-muted); font-style:italic;
+}
+.third-place{margin-top:14px}
+.third-place .bracket-slot{max-width:280px}
+
+.bracket-round{margin-bottom:18px}
+.bracket-round:last-child{margin-bottom:0}
+.bracket-round-title{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--ink-muted); margin:0 0 8px;
+}
+.cup-block{margin-bottom:26px}
+.cup-block:last-child{margin-bottom:0}
+.cup-title{
+  font-family:"Big Shoulders Display", sans-serif; font-weight:700; text-transform:uppercase;
+  letter-spacing:.02em; font-size:18px; color:var(--turf-600); margin:0 0 12px;
+  padding-bottom:6px; border-bottom:2px solid var(--border);
+}
+
+/* ---------- floating action / admin ---------- */
+.fab{
+  position:fixed; right:18px; bottom:18px; z-index:40;
+  background:var(--turf-600); color:#fff; border:none; border-radius:999px;
+  padding:13px 18px; font-weight:700; font-size:14px; cursor:pointer;
+  box-shadow:0 10px 28px -8px rgba(18,52,35,.55); display:inline-flex; align-items:center; gap:8px;
+}
+.fab:hover{background:var(--turf-500)}
+.admin-link{position:fixed; right:18px; bottom:18px; z-index:40; background:var(--surface); color:var(--ink-muted); border-color:var(--border)}
+.admin-link:hover{background:var(--surface-2); color:var(--ink)}
+.fab .plus{
+  width:20px;height:20px;border-radius:50%;background:var(--gold); color:var(--gold-ink);
+  display:inline-flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; line-height:1;
+}
+
+.readonly-banner{
+  max-width:1080px; margin:14px auto 0; padding:10px 20px; font-size:12.5px; color:var(--ink-muted);
+  display:flex; align-items:center; gap:8px;
+}
+.readonly-banner .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-muted)}
+
+/* ---------- modal ---------- */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(10,20,14,.55); z-index:50;
+  display:flex; align-items:flex-end; justify-content:center;
+}
+@media (min-width:720px){ .modal-overlay{align-items:center} }
+.modal{
+  background:var(--surface); width:100%; max-width:640px; max-height:88vh; overflow-y:auto;
+  border-radius:16px 16px 0 0; box-shadow:var(--shadow); border:1px solid var(--border); border-bottom:none;
+}
+@media (min-width:720px){ .modal{border-radius:16px; border-bottom:1px solid var(--border)} }
+.modal-head{
+  position:sticky; top:0; background:var(--surface); z-index:2;
+  display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px;
+  border-bottom:1px solid var(--border);
+}
+.modal-title{font-family:"Big Shoulders Display",sans-serif; font-size:19px; font-weight:700; text-transform:uppercase; margin:0}
+.modal-close{
+  background:var(--surface-2); border:none; width:30px; height:30px; border-radius:50%; cursor:pointer;
+  font-size:15px; color:var(--ink); display:inline-flex; align-items:center; justify-content:center;
+}
+.modal-tabs{display:flex; gap:6px; padding:10px 16px 0}
+.modal-tab{
+  border:1px solid var(--border); background:var(--surface-2); color:var(--ink-muted);
+  padding:6px 12px; border-radius:999px; font-size:12.5px; font-weight:600; cursor:pointer;
+}
+.modal-tab[aria-selected="true"]{background:var(--turf-600); color:#fff; border-color:var(--turf-600)}
+.modal-body{padding:14px 16px 22px}
+
+.admin-match-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:10px 4px; border-bottom:1px solid var(--border); cursor:pointer; background:none; border-left:none; border-right:none; border-top:none; width:100%; text-align:left;
+}
+.admin-match-row:last-child{border-bottom:none}
+.admin-match-row:hover{background:var(--surface-2)}
+.amr-teams{font-size:13.5px; font-weight:600}
+.amr-teams .vs{color:var(--ink-muted); font-weight:400; margin:0 4px}
+.amr-meta{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--ink-muted); margin-top:2px}
+.amr-status{font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:999px; flex-shrink:0}
+.amr-status.pendiente{background:var(--surface-2); color:var(--ink-muted)}
+.amr-status.vivo{background:var(--coral-soft); color:var(--coral)}
+.amr-status.final{background:var(--win-soft); color:var(--win)}
+
+.score-form{padding:6px 2px}
+.score-form h4{font-size:15px; margin:0 0 12px}
+.score-teams{display:grid; grid-template-columns:1fr 70px; gap:10px; align-items:center; margin-bottom:10px}
+.score-teams label{font-size:13.5px; font-weight:600}
+.score-teams input[type=number]{
+  width:100%; font-family:"Big Shoulders Display",sans-serif; font-size:24px; text-align:center;
+  border:1px solid var(--border); border-radius:8px; padding:6px 4px; background:var(--surface); color:var(--ink);
+}
+.field-row{display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap}
+.field-row > div{flex:1; min-width:110px}
+.field-row label{display:block; font-size:11.5px; color:var(--ink-muted); margin-bottom:3px; font-family:"IBM Plex Mono",monospace}
+.field-row input[type=text], .field-row input[type=time], .field-row select{
+  width:100%; border:1px solid var(--border); border-radius:8px; padding:7px 8px; font-size:13.5px; background:var(--surface); color:var(--ink);
+}
+.btn-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+.btn{
+  border-radius:9px; padding:9px 14px; font-size:13px; font-weight:700; cursor:pointer; border:1px solid transparent;
+}
+.btn-primary{background:var(--turf-600); color:#fff}
+.btn-primary:hover{background:var(--turf-500)}
+.btn-live{background:var(--coral); color:#fff}
+.btn-live:hover{opacity:.9}
+.btn-ghost{background:var(--surface-2); color:var(--ink); border-color:var(--border)}
+.btn-ghost:hover{background:var(--border)}
+.btn-danger{background:var(--loss-soft); color:var(--loss)}
+.btn:disabled{opacity:.5; cursor:not-allowed}
+
+.team-editor{margin-bottom:18px}
+.team-editor h4{font-size:14px; margin:0 0 8px; color:var(--turf-600)}
+.team-list{display:flex; flex-direction:column; gap:6px; margin-bottom:8px}
+.team-list input{border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:13px; background:var(--surface); color:var(--ink)}
+
+.toast{
+  position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:60;
+  background:var(--turf-700); color:#fff; padding:10px 16px; border-radius:10px; font-size:13px;
+  box-shadow:var(--shadow); display:flex; align-items:center; gap:8px;
+}
+.toast.error{background:var(--loss)}
+
+.empty-note{font-size:13px; color:var(--ink-muted); font-style:italic; padding:8px 2px}
+
+/* ---------- TV / pantalla grande mode ---------- */
+body.tv-mode{font-size:calc(15px * var(--scale))}
+body.tv-mode .fab, body.tv-mode .tabbar{display:none}
+body.tv-mode .wrap{max-width:1400px}
+body.tv-mode .brand-title{font-size:clamp(34px, 5vw, 56px)}
+body.tv-mode .sponsor-logo{height:72px}
+@media (max-width:480px){ .sponsor-logo{height:38px} }
+body.tv-mode .section-title{font-size:24px}
+body.tv-mode .zone-name{font-size:21px}
+body.tv-mode .match-team{font-size:16px}
+body.tv-mode .match-score{font-size:27px}
+body.tv-mode table.standings{font-size:15px}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const CSS = "/* ===== Marcador en vivo — torneo de hockey ===== */\n\n:root{\n  --bg:#F7F4F3;\n  --surface:#FFFFFF;\n  --surface-2:#F1E7E6;\n  --border:#E3D2D0;\n  --ink:#241414;\n  --ink-muted:#6B5958;\n  --turf-700:#7A1418;\n  --turf-600:#EA2427;\n  --turf-500:#FF5449;\n  --gold:#D99A00;\n  --gold-soft:#F6E7BF;\n  --gold-ink:#5C4200;\n  --plata:#3E6FA8;\n  --plata-soft:#DCE9F6;\n  --plata-ink:#1F3A57;\n  --coral:#D9502A;\n  --coral-soft:#F7DCD1;\n  --win:#1F7A43;\n  --win-soft:#DFF0E4;\n  --draw:#8A7A22;\n  --draw-soft:#F1EBCF;\n  --loss:#B23A3A;\n  --loss-soft:#F6DEDE;\n  --shadow:0 1px 2px rgba(40,10,10,.07), 0 8px 24px -12px rgba(40,10,10,.2);\n  --radius:14px;\n  --scale:1;\n}\n\n@media (prefers-color-scheme: dark){\n  :root:not([data-theme=\"light\"]){\n    --bg:#180E0D;\n    --surface:#211615;\n    --surface-2:#2A1A19;\n    --border:#3C2A28;\n    --ink:#F2E9E8;\n    --ink-muted:#B09B99;\n    --turf-700:#2A0A0A;\n    --turf-600:#FF5449;\n    --turf-500:#FF8478;\n    --gold:#EFB93B;\n    --gold-soft:#3A2E0E;\n    --gold-ink:#F6E2A6;\n    --plata:#7FA8E0;\n    --plata-soft:#1E2E40;\n    --plata-ink:#D7E6F5;\n    --coral:#FF7A52;\n    --coral-soft:#3A2016;\n    --win:#3FAE71;\n    --win-soft:#173425;\n    --draw:#CBB84E;\n    --draw-soft:#332C10;\n    --loss:#E56A6A;\n    --loss-soft:#3A1D1D;\n    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);\n  }\n}\n:root[data-theme=\"dark\"]{\n  --bg:#180E0D;\n  --surface:#211615;\n  --surface-2:#2A1A19;\n  --border:#3C2A28;\n  --ink:#F2E9E8;\n  --ink-muted:#B09B99;\n  --turf-700:#2A0A0A;\n  --turf-600:#FF5449;\n  --turf-500:#FF8478;\n  --gold:#EFB93B;\n  --gold-soft:#3A2E0E;\n  --gold-ink:#F6E2A6;\n  --plata:#7FA8E0;\n  --plata-soft:#1E2E40;\n  --plata-ink:#D7E6F5;\n  --coral:#FF7A52;\n  --coral-soft:#3A2016;\n  --win:#3FAE71;\n  --win-soft:#173425;\n  --draw:#CBB84E;\n  --draw-soft:#332C10;\n  --loss:#E56A6A;\n  --loss-soft:#3A1D1D;\n  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);\n}\n\n*,*::before,*::after{box-sizing:border-box}\nhtml{-webkit-text-size-adjust:100%}\nbody{\n  margin:0;\n  background:var(--bg);\n  color:var(--ink);\n  font-family:\"Source Sans 3\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif;\n  font-size:15px;\n  line-height:1.45;\n}\nh1,h2,h3{text-wrap:balance}\nimg{max-width:100%}\nbutton{font-family:inherit}\n.mono{font-family:\"IBM Plex Mono\", ui-monospace, \"SF Mono\", Menlo, monospace}\n.tabular{font-variant-numeric:tabular-nums}\n:focus-visible{outline:2px solid var(--gold); outline-offset:2px}\n\n@media (prefers-reduced-motion: reduce){\n  *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}\n}\n\n/* ---------- layout shell ---------- */\n.wrap{max-width:1080px; margin:0 auto; padding:0 20px 96px}\n\n/* ---------- header / scoreboard bar ---------- */\n.scorebar{\n  background:linear-gradient(180deg, var(--turf-700), var(--turf-600));\n  color:#F3F7EF;\n  border-bottom:3px solid var(--gold);\n  position:sticky; top:0; z-index:30;\n}\n.scorebar-inner{\n  max-width:1080px; margin:0 auto; padding:16px 20px 14px;\n  display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px 20px;\n}\n.brand-block{display:flex; align-items:center; gap:14px}\n.sponsor-logo{\n  height:50px; width:auto; border-radius:9px; display:block;\n  border:2px solid rgba(255,255,255,.85);\n  box-shadow:0 4px 12px -4px rgba(0,0,0,.5);\n}\n.brand-eyebrow{\n  font-family:\"IBM Plex Mono\", monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase;\n  color:var(--gold); margin:0 0 4px;\n}\n.brand-title{\n  font-family:\"Big Shoulders Display\", \"Archivo Black\", sans-serif;\n  font-weight:800; text-transform:uppercase; letter-spacing:.01em;\n  font-size:clamp(26px, 4vw, 40px); line-height:.98; margin:0;\n}\n.brand-sub{margin:6px 0 0; font-size:13.5px; color:#F0D8D5; max-width:52ch}\n.scorebar-meta{display:flex; align-items:center; gap:10px; flex-wrap:wrap}\n.updated-chip{\n  font-family:\"IBM Plex Mono\", monospace; font-size:11.5px; color:#F0D8D5;\n  border:1px solid rgba(255,255,255,.22); border-radius:999px; padding:5px 10px;\n}\n.live-chip{\n  display:inline-flex; align-items:center; gap:7px;\n  background:rgba(217,80,42,.18); border:1px solid var(--coral);\n  color:#FFDFD2; font-family:\"IBM Plex Mono\",monospace; font-size:12px; font-weight:600;\n  border-radius:999px; padding:5px 11px 5px 9px;\n}\n.live-dot{width:7px;height:7px;border-radius:50%;background:var(--coral); box-shadow:0 0 0 0 rgba(217,80,42,.6); animation:pulse 1.8s infinite}\n@keyframes pulse{\n  0%{box-shadow:0 0 0 0 rgba(217,80,42,.55)}\n  70%{box-shadow:0 0 0 8px rgba(217,80,42,0)}\n  100%{box-shadow:0 0 0 0 rgba(217,80,42,0)}\n}\n.tv-btn{\n  border:1px solid rgba(255,255,255,.28); background:rgba(255,255,255,.06); color:#F3F7EF;\n  border-radius:10px; padding:7px 12px; font-size:12.5px; font-weight:600; cursor:pointer;\n  display:inline-flex; align-items:center; gap:6px;\n}\n.tv-btn:hover{background:rgba(255,255,255,.14)}\n\n/* category tabs */\n.tabbar{max-width:1080px; margin:0 auto; padding:10px 20px 0; display:flex; gap:8px; flex-wrap:wrap}\n.tab{\n  border:1px solid rgba(255,255,255,.22); background:transparent; color:#F1DCDA;\n  padding:8px 14px; border-radius:999px 999px 0 0; font-size:13.5px; font-weight:600; cursor:pointer;\n  border-bottom:none;\n}\n.tab[aria-selected=\"true\"]{background:var(--bg); color:var(--turf-600); border-color:var(--bg)}\n.tab-info{margin-left:auto; border-style:dashed; opacity:.9}\n.tab-info[aria-selected=\"true\"]{opacity:1}\n\n/* ---------- section shell ---------- */\n.section{margin-top:28px}\n\n/* ---------- \"¿Cómo se juega?\" explainer ---------- */\n.mod-cat-picker{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px}\n.mod-cat-btn{\n  border:1px solid var(--border); background:var(--surface); color:var(--ink-muted);\n  padding:8px 16px; border-radius:999px; font-size:13.5px; font-weight:700; cursor:pointer;\n}\n.mod-cat-btn:hover{background:var(--surface-2)}\n.mod-cat-btn[aria-selected=\"true\"]{background:var(--turf-600); color:#fff; border-color:var(--turf-600)}\n.mod-card{\n  display:flex; gap:14px; align-items:flex-start;\n  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);\n  box-shadow:var(--shadow); padding:16px 18px; margin-bottom:14px;\n}\n.mod-step{\n  flex:none; width:30px; height:30px; border-radius:50%; background:var(--turf-600); color:#fff;\n  display:flex; align-items:center; justify-content:center;\n  font-family:\"Big Shoulders Display\", sans-serif; font-weight:800; font-size:15px;\n}\n.mod-copy{min-width:0}\n.mod-copy h4{\n  margin:0 0 6px; font-family:\"Big Shoulders Display\", sans-serif; font-weight:700;\n  text-transform:uppercase; letter-spacing:.01em; font-size:16px; color:var(--turf-600);\n}\n.mod-copy p{margin:0 0 10px; font-size:13.5px; color:var(--ink); line-height:1.55}\n.mod-copy p:last-child{margin-bottom:0}\n.mod-list{margin:0 0 10px; padding-left:18px; font-size:13.5px; color:var(--ink); line-height:1.6}\n.mod-list li{margin-bottom:4px}\n.mod-list:last-child{margin-bottom:0}\n.mod-flow{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:8px 0}\n.mod-flow:last-child{margin-bottom:0}\n.mod-chip{\n  display:flex; flex-direction:column; align-items:center; gap:2px;\n  background:var(--surface-2); border:1px solid var(--border); border-radius:10px;\n  padding:8px 12px; font-weight:700; font-size:13px; color:var(--ink); text-align:center;\n}\n.mod-chip small{font-weight:500; font-size:10.5px; color:var(--ink-muted)}\n.mod-chip-result{background:var(--surface); border:1px solid var(--turf-600); color:var(--turf-600)}\n.mod-chip-gold{background:var(--gold-soft); border-color:var(--gold); color:var(--gold-ink)}\n.mod-chip-plata{background:var(--plata-soft); border-color:var(--plata); color:var(--plata-ink)}\n.mod-chip-bronze{background:var(--coral-soft); border-color:var(--coral); color:var(--ink)}\n.mod-arrow{font-size:20px; color:var(--ink-muted)}\n\n/* ---------- cruce diagram (esquema de cruce de posiciones) ---------- */\n.cross-diagram{width:100%; height:auto; margin:6px 0 4px; display:block}\n.cross-diagram .cd-col-label{\n  fill:var(--turf-600); font-family:\"Big Shoulders Display\", sans-serif; font-weight:700;\n  font-size:14px; text-transform:uppercase; letter-spacing:.02em; text-anchor:middle;\n}\n.cross-diagram .cd-box{fill:var(--surface); stroke:var(--border); stroke-width:1.5}\n.cross-diagram .cd-badge-bg{fill:var(--turf-600)}\n.cross-diagram .cd-badge-text{\n  fill:#fff; font-family:\"Big Shoulders Display\", sans-serif; font-weight:800; font-size:15px;\n  text-anchor:middle; dominant-baseline:central;\n}\n.cross-diagram .cd-line{stroke:var(--turf-600); stroke-width:2.5; opacity:.55}\n.cross-diagram .cd-line-straight{stroke:var(--ink-muted); stroke-width:2.5; opacity:.55; stroke-dasharray:5 4}\n\n/* variantes de color por copa, usadas en el cruce de 4 zonas (Sub 14) */\n.cross-diagram .cd-badge-bg.cd-badge-oro{fill:var(--gold)}\n.cross-diagram .cd-badge-text.cd-badge-text-oro{fill:var(--gold-ink)}\n.cross-diagram .cd-badge-bg.cd-badge-plata{fill:var(--plata)}\n.cross-diagram .cd-badge-text.cd-badge-text-plata{fill:#fff}\n.cross-diagram .cd-badge-bg.cd-badge-estimulo{fill:var(--coral)}\n.cross-diagram .cd-badge-text.cd-badge-text-estimulo{fill:#fff}\n.cross-diagram .cd-line-oro{stroke:var(--gold); opacity:.7}\n.cross-diagram .cd-line-plata{stroke:var(--plata); opacity:.7}\n.cross-diagram .cd-line-estimulo{stroke:var(--coral); opacity:.7}\n\n.cross-diagram-pair{display:flex; gap:18px; flex-wrap:wrap; margin:6px 0 10px}\n.cross-diagram-pair > div{flex:1; min-width:260px}\n.mod-example-label{margin:14px 0 4px !important; font-size:12.5px !important; font-weight:600; color:var(--ink-muted) !important; font-style:italic}\n.cd-legend{display:flex; gap:14px; flex-wrap:wrap; margin:2px 0 14px; font-size:12px; color:var(--ink-muted)}\n.cd-legend span{display:inline-flex; align-items:center; gap:6px}\n.cd-legend i{width:12px; height:12px; border-radius:3px; display:inline-block}\n.cd-legend i.cd-dot-oro{background:var(--gold)}\n.cd-legend i.cd-dot-plata{background:var(--plata)}\n.cd-legend i.cd-dot-estimulo{background:var(--coral)}\n\n.section-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px}\n.section-title{\n  font-family:\"Big Shoulders Display\", sans-serif; font-weight:700; text-transform:uppercase;\n  letter-spacing:.03em; font-size:19px; color:var(--turf-600); margin:0;\n}\n.section-note{font-size:12.5px; color:var(--ink-muted)}\n\n.zone-block{\n  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);\n  box-shadow:var(--shadow); padding:16px 16px 18px; margin-bottom:16px;\n}\n.zone-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px}\n.zone-name{\n  font-family:\"Big Shoulders Display\", sans-serif; font-size:17px; font-weight:700;\n  text-transform:uppercase; letter-spacing:.02em; color:var(--turf-600); margin:0;\n}\n.zone-tag{font-family:\"IBM Plex Mono\",monospace; font-size:11px; color:var(--ink-muted)}\n\n/* ---------- fixture by day ---------- */\n.day-block{margin-bottom:22px}\n.day-block:last-child{margin-bottom:0}\n.day-title{\n  font-family:\"Big Shoulders Display\", sans-serif; font-weight:700; text-transform:uppercase;\n  letter-spacing:.02em; font-size:15px; color:var(--ink-muted); margin:0 0 10px;\n  padding-bottom:6px; border-bottom:1px solid var(--border);\n}\n\n/* ---------- match cards ---------- */\n.match-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); gap:10px}\n.match-card{\n  border:1px solid var(--border); border-radius:12px; background:var(--surface);\n  padding:11px 12px 10px; position:relative;\n}\n.match-card.is-live{border-color:var(--coral)}\n.match-card-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px}\n.match-card-head .match-status{margin-bottom:0}\n.match-card-tags{display:inline-flex; align-items:center; gap:6px}\n.match-zone-tag{\n  font-family:\"IBM Plex Mono\",monospace; font-size:10px; font-weight:700; letter-spacing:.04em;\n  text-transform:uppercase; color:var(--ink-muted); background:var(--surface-2);\n  border-radius:999px; padding:3px 8px;\n}\n.match-num-tag{\n  font-family:\"IBM Plex Mono\",monospace; font-size:10px; font-weight:700; letter-spacing:.04em;\n  text-transform:uppercase; color:var(--turf-600); background:var(--coral-soft);\n  border-radius:999px; padding:3px 8px;\n}\n.match-status{\n  display:inline-flex; align-items:center; gap:5px;\n  font-family:\"IBM Plex Mono\",monospace; font-size:10.5px; font-weight:700; letter-spacing:.06em;\n  text-transform:uppercase; padding:3px 8px; border-radius:999px; margin-bottom:8px;\n}\n.match-status.pendiente{background:var(--surface-2); color:var(--ink-muted)}\n.match-status.vivo{background:var(--coral-soft); color:var(--coral)}\n.match-status.vivo .live-dot{background:var(--coral)}\n.match-status.final{background:var(--win-soft); color:var(--win)}\n.match-teams{display:flex; flex-direction:column; gap:5px}\n.match-row{display:flex; align-items:center; justify-content:space-between; gap:10px}\n.match-team{font-size:14px; font-weight:600; color:var(--ink)}\n.match-row.win .match-team{color:var(--turf-600)}\n.match-score{\n  font-family:\"Big Shoulders Display\", sans-serif; font-weight:700; font-size:22px;\n  min-width:1.4em; text-align:right; color:var(--ink);\n}\n.match-row.win .match-score{color:var(--turf-600)}\n.match-meta{\n  margin-top:8px; padding-top:7px; border-top:1px dashed var(--border);\n  display:flex; justify-content:space-between; font-family:\"IBM Plex Mono\",monospace;\n  font-size:10.5px; color:var(--ink-muted);\n}\n\n/* ---------- standings table ---------- */\n.standings-wrap{overflow-x:auto; margin-top:4px}\ntable.standings{border-collapse:collapse; width:100%; min-width:480px; font-size:13px}\ntable.standings th, table.standings td{padding:7px 8px; text-align:center; white-space:nowrap}\ntable.standings th{\n  font-family:\"IBM Plex Mono\",monospace; font-size:10px; letter-spacing:.04em; text-transform:uppercase;\n  color:var(--ink-muted); border-bottom:1px solid var(--border); font-weight:600;\n}\ntable.standings td.team{text-align:left; font-weight:600}\ntable.standings td.pts{font-weight:800; color:var(--turf-600)}\ntable.standings tbody tr{border-bottom:1px solid var(--border)}\ntable.standings tbody tr:last-child{border-bottom:none}\ntable.standings tbody tr.qualifies td.team{position:relative; padding-left:14px}\ntable.standings tbody tr.qualifies td.team::before{\n  content:\"\"; position:absolute; left:0; top:3px; bottom:3px; width:3px; border-radius:2px; background:var(--gold);\n}\n.pos{font-family:\"IBM Plex Mono\",monospace; color:var(--ink-muted)}\n\n/* ---------- bracket ---------- */\n.bracket{display:flex; gap:22px; align-items:center; overflow-x:auto; padding:6px 2px 10px}\n.bracket-col{display:flex; flex-direction:column; gap:16px; min-width:210px}\n.bracket-col.final-col{justify-content:center}\n.bracket-label{\n  font-family:\"IBM Plex Mono\",monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase;\n  color:var(--ink-muted); margin-bottom:2px;\n}\n.bracket-slot{\n  border:1px solid var(--border); border-radius:10px; background:var(--surface); padding:9px 10px;\n  box-shadow:var(--shadow);\n}\n.bracket-slot .match-row{padding:2px 0}\n.bracket-slot .match-team{font-size:13px}\n.bracket-slot .match-score{font-size:18px}\n.bracket-placeholder{\n  border:1px dashed var(--border); border-radius:10px; padding:12px 10px; text-align:center;\n  font-size:12px; color:var(--ink-muted); font-style:italic;\n}\n.third-place{margin-top:14px}\n.third-place .bracket-slot{max-width:280px}\n\n.bracket-round{margin-bottom:18px}\n.bracket-round:last-child{margin-bottom:0}\n.bracket-round-title{\n  font-family:\"IBM Plex Mono\",monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase;\n  color:var(--ink-muted); margin:0 0 8px;\n}\n.cup-block{margin-bottom:26px}\n.cup-block:last-child{margin-bottom:0}\n.cup-title{\n  font-family:\"Big Shoulders Display\", sans-serif; font-weight:700; text-transform:uppercase;\n  letter-spacing:.02em; font-size:18px; color:var(--turf-600); margin:0 0 12px;\n  padding-bottom:6px; border-bottom:2px solid var(--border);\n}\n\n/* ---------- floating action / admin ---------- */\n.fab{\n  position:fixed; right:18px; bottom:18px; z-index:40;\n  background:var(--turf-600); color:#fff; border:none; border-radius:999px;\n  padding:13px 18px; font-weight:700; font-size:14px; cursor:pointer;\n  box-shadow:0 10px 28px -8px rgba(18,52,35,.55); display:inline-flex; align-items:center; gap:8px;\n}\n.fab:hover{background:var(--turf-500)}\n.admin-link{position:fixed; right:18px; bottom:18px; z-index:40; background:var(--surface); color:var(--ink-muted); border-color:var(--border)}\n.admin-link:hover{background:var(--surface-2); color:var(--ink)}\n.fab .plus{\n  width:20px;height:20px;border-radius:50%;background:var(--gold); color:var(--gold-ink);\n  display:inline-flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; line-height:1;\n}\n\n.readonly-banner{\n  max-width:1080px; margin:14px auto 0; padding:10px 20px; font-size:12.5px; color:var(--ink-muted);\n  display:flex; align-items:center; gap:8px;\n}\n.readonly-banner .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-muted)}\n\n/* ---------- modal ---------- */\n.modal-overlay{\n  position:fixed; inset:0; background:rgba(10,20,14,.55); z-index:50;\n  display:flex; align-items:flex-end; justify-content:center;\n}\n@media (min-width:720px){ .modal-overlay{align-items:center} }\n.modal{\n  background:var(--surface); width:100%; max-width:640px; max-height:88vh; overflow-y:auto;\n  border-radius:16px 16px 0 0; box-shadow:var(--shadow); border:1px solid var(--border); border-bottom:none;\n}\n@media (min-width:720px){ .modal{border-radius:16px; border-bottom:1px solid var(--border)} }\n.modal-head{\n  position:sticky; top:0; background:var(--surface); z-index:2;\n  display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px;\n  border-bottom:1px solid var(--border);\n}\n.modal-title{font-family:\"Big Shoulders Display\",sans-serif; font-size:19px; font-weight:700; text-transform:uppercase; margin:0}\n.modal-close{\n  background:var(--surface-2); border:none; width:30px; height:30px; border-radius:50%; cursor:pointer;\n  font-size:15px; color:var(--ink); display:inline-flex; align-items:center; justify-content:center;\n}\n.modal-tabs{display:flex; gap:6px; padding:10px 16px 0}\n.modal-tab{\n  border:1px solid var(--border); background:var(--surface-2); color:var(--ink-muted);\n  padding:6px 12px; border-radius:999px; font-size:12.5px; font-weight:600; cursor:pointer;\n}\n.modal-tab[aria-selected=\"true\"]{background:var(--turf-600); color:#fff; border-color:var(--turf-600)}\n.modal-body{padding:14px 16px 22px}\n\n.admin-match-row{\n  display:flex; align-items:center; justify-content:space-between; gap:10px;\n  padding:10px 4px; border-bottom:1px solid var(--border); cursor:pointer; background:none; border-left:none; border-right:none; border-top:none; width:100%; text-align:left;\n}\n.admin-match-row:last-child{border-bottom:none}\n.admin-match-row:hover{background:var(--surface-2)}\n.amr-teams{font-size:13.5px; font-weight:600}\n.amr-teams .vs{color:var(--ink-muted); font-weight:400; margin:0 4px}\n.amr-meta{font-family:\"IBM Plex Mono\",monospace; font-size:10.5px; color:var(--ink-muted); margin-top:2px}\n.amr-status{font-family:\"IBM Plex Mono\",monospace; font-size:10px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:999px; flex-shrink:0}\n.amr-status.pendiente{background:var(--surface-2); color:var(--ink-muted)}\n.amr-status.vivo{background:var(--coral-soft); color:var(--coral)}\n.amr-status.final{background:var(--win-soft); color:var(--win)}\n\n.score-form{padding:6px 2px}\n.score-form h4{font-size:15px; margin:0 0 12px}\n.score-teams{display:grid; grid-template-columns:1fr 70px; gap:10px; align-items:center; margin-bottom:10px}\n.score-teams label{font-size:13.5px; font-weight:600}\n.score-teams input[type=number]{\n  width:100%; font-family:\"Big Shoulders Display\",sans-serif; font-size:24px; text-align:center;\n  border:1px solid var(--border); border-radius:8px; padding:6px 4px; background:var(--surface); color:var(--ink);\n}\n.field-row{display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap}\n.field-row > div{flex:1; min-width:110px}\n.field-row label{display:block; font-size:11.5px; color:var(--ink-muted); margin-bottom:3px; font-family:\"IBM Plex Mono\",monospace}\n.field-row input[type=text], .field-row input[type=time], .field-row select{\n  width:100%; border:1px solid var(--border); border-radius:8px; padding:7px 8px; font-size:13.5px; background:var(--surface); color:var(--ink);\n}\n.btn-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}\n.btn{\n  border-radius:9px; padding:9px 14px; font-size:13px; font-weight:700; cursor:pointer; border:1px solid transparent;\n}\n.btn-primary{background:var(--turf-600); color:#fff}\n.btn-primary:hover{background:var(--turf-500)}\n.btn-live{background:var(--coral); color:#fff}\n.btn-live:hover{opacity:.9}\n.btn-ghost{background:var(--surface-2); color:var(--ink); border-color:var(--border)}\n.btn-ghost:hover{background:var(--border)}\n.btn-danger{background:var(--loss-soft); color:var(--loss)}\n.btn:disabled{opacity:.5; cursor:not-allowed}\n\n.team-editor{margin-bottom:18px}\n.team-editor h4{font-size:14px; margin:0 0 8px; color:var(--turf-600)}\n.team-list{display:flex; flex-direction:column; gap:6px; margin-bottom:8px}\n.team-list input{border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:13px; background:var(--surface); color:var(--ink)}\n\n.toast{\n  position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:60;\n  background:var(--turf-700); color:#fff; padding:10px 16px; border-radius:10px; font-size:13px;\n  box-shadow:var(--shadow); display:flex; align-items:center; gap:8px;\n}\n.toast.error{background:var(--loss)}\n\n.empty-note{font-size:13px; color:var(--ink-muted); font-style:italic; padding:8px 2px}\n\n/* ---------- TV / pantalla grande mode ---------- */\nbody.tv-mode{font-size:calc(15px * var(--scale))}\nbody.tv-mode .fab, body.tv-mode .tabbar{display:none}\nbody.tv-mode .wrap{max-width:1400px}\nbody.tv-mode .brand-title{font-size:clamp(34px, 5vw, 56px)}\nbody.tv-mode .sponsor-logo{height:72px}\n@media (max-width:480px){ .sponsor-logo{height:38px} }\nbody.tv-mode .section-title{font-size:24px}\nbody.tv-mode .zone-name{font-size:21px}\nbody.tv-mode .match-team{font-size:16px}\nbody.tv-mode .match-score{font-size:27px}\nbody.tv-mode table.standings{font-size:15px}\n";
+const HEAD_META = "<meta charset=\"utf-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n<title>Marcador de Hockey en Vivo</title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap\" rel=\"stylesheet\">";
+function APP(STATE){
+  "use strict";
+
+  /* ---------------- ui (session-only, not persisted) ---------------- */
+  var ui = {
+    modalOpen:false,
+    modalTab:'partidos',
+    selectedMatchId:null,
+    adminCategoryId: STATE.activeCategoryId,
+    modalidadCategoryId: STATE.activeCategoryId,
+    confirmArmed:{},
+    tvIndex:0,
+    adminUnlocked:false,
+    gateOpen:false,
+    gateError:false,
+    view:'torneo'
+  };
+  var isReadOnly = false;
+  var artifactNS = null;
+  var capabilityChecked = false;
+  var mcpNS = null;
+  var mcpChecked = false;
+  var tvTimer = null;
+  var sheetWatchUnsub = null;
+  var sheetStatus = { state:'idle', message:'Sin sincronizar todavía.', lastSync:null };
+  try{ if(sessionStorage.getItem('hockeyAdminUnlocked')==='1'){ ui.adminUnlocked = true; } }catch(e){}
+
+  /* ---------------- small helpers ---------------- */
+  function uid(){ return 'm' + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function getCategory(id){ return STATE.categories.find(function(c){ return c.id===id; }); }
+
+  /* ---------------- días del torneo ---------------- */
+  var DAY_ORDER = ['vie','sab','dom'];
+  var DAY_LABELS = { vie:'Viernes 25/9', sab:'Sábado 26/9', dom:'Domingo 27/9' };
+  function dayLabel(code){ return DAY_LABELS[code] || 'Fecha a confirmar'; }
+  function dayIndex(code){ var i = DAY_ORDER.indexOf(code); return i===-1 ? 99 : i; }
+
+  function fmtUpdated(iso){
+    try{
+      var d = new Date(iso);
+      return d.toLocaleString('es-AR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+    }catch(e){ return ''; }
+  }
+
+  /* ---------------- fixture generation ---------------- */
+  function roundRobin(teams){
+    var arr = teams.slice();
+    var hasBye = false;
+    if(arr.length % 2 !== 0){ arr.push(null); hasBye = true; }
+    var n = arr.length, rounds = n-1, half = n/2;
+    var list = arr.slice();
+    var pairs = [];
+    for(var r=0;r<rounds;r++){
+      for(var i=0;i<half;i++){
+        var a = list[i], b = list[n-1-i];
+        if(a!=null && b!=null) pairs.push([a,b]);
+      }
+      var fixed = list[0];
+      var rest = list.slice(1);
+      rest.unshift(rest.pop());
+      list = [fixed].concat(rest);
+    }
+    return pairs;
+  }
+
+  function makeMatch(partial){
+    return Object.assign({
+      id: uid(), stage:'grupos', zoneId:null, slotLabelA:null, slotLabelB:null,
+      teamA:null, teamB:null, scoreA:null, scoreB:null, status:'pendiente',
+      court:'', time:'', day:null, matchNum:null, shootoutWinner:null
+    }, partial);
+  }
+
+  function generateGroupMatches(zone, pairs){
+    return pairs.map(function(p, i){
+      var minutesFromStart = i*30;
+      var hour = 9 + Math.floor(minutesFromStart/60);
+      var min = minutesFromStart % 60;
+      var time = String(hour).padStart(2,'0') + ':' + String(min).padStart(2,'0');
+      var court = 'Cancha ' + ((i % 2) + 1);
+      return makeMatch({stage:'grupos', zoneId:zone.id, teamA:p[0], teamB:p[1], time:time, court:court});
+    });
+  }
+
+  function regenerateZoneFixture(cat, zoneId, newTeamNames){
+    var zone = cat.zones.find(function(z){ return z.id===zoneId; });
+    zone.teams = newTeamNames.filter(function(t){ return t && t.trim(); }).map(function(t){ return t.trim(); });
+    // keep group matches from OTHER zones and every bracket match (the playoff engine
+    // will re-resolve/reset bracket matches on the next refreshCategory); drop only this zone's old matches
+    cat.matches = cat.matches.filter(function(m){ return m.stage==='bracket' || (m.stage==='grupos' && m.zoneId!==zoneId); });
+    if(zone.teams.length >= 2){
+      // roundRobin() already handles an odd team count internally (adds a bye),
+      // so zones of 4, 5 or any other size all get a correct fixture.
+      var pairs = roundRobin(zone.teams);
+      cat.matches = cat.matches.concat(generateGroupMatches(zone, pairs));
+    }
+  }
+
+  /* ---------------- standings ---------------- */
+  function groupMatches(cat, zoneId){
+    return cat.matches.filter(function(m){ return m.stage==='grupos' && m.zoneId===zoneId; });
+  }
+  function zoneComplete(cat, zoneId){
+    var gm = groupMatches(cat, zoneId);
+    return gm.length>0 && gm.every(function(m){ return m.status==='final'; });
+  }
+  function computeStandingsGeneric(matches, teamNames, pointsWin, pointsDraw, pointsLoss){
+    var table = {};
+    teamNames.forEach(function(t){ table[t] = {team:t, pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,dg:0,pts:0}; });
+    matches.forEach(function(m){
+      if(m.status!=='final' || m.scoreA==null || m.scoreB==null) return;
+      var a = table[m.teamA], b = table[m.teamB];
+      if(!a || !b) return;
+      a.pj++; b.pj++;
+      a.gf += m.scoreA; a.gc += m.scoreB;
+      b.gf += m.scoreB; b.gc += m.scoreA;
+      if(m.scoreA > m.scoreB){ a.pg++; a.pts += pointsWin; b.pp++; b.pts += pointsLoss; }
+      else if(m.scoreB > m.scoreA){ b.pg++; b.pts += pointsWin; a.pp++; a.pts += pointsLoss; }
+      else { a.pe++; b.pe++; a.pts += pointsDraw; b.pts += pointsDraw; }
+    });
+    Object.keys(table).forEach(function(k){ table[k].dg = table[k].gf - table[k].gc; });
+    // Head-to-head: saldo de goles entre dos equipos cuando se enfrentaron
+    // (último criterio de desempate según el Reglamento del Torneo).
+    function headToHead(teamX, teamY){
+      var diff = 0;
+      matches.forEach(function(m){
+        if(m.status!=='final' || m.scoreA==null || m.scoreB==null) return;
+        if(m.teamA===teamX && m.teamB===teamY) diff += (m.scoreA - m.scoreB);
+        else if(m.teamA===teamY && m.teamB===teamX) diff += (m.scoreB - m.scoreA);
+      });
+      return diff;
+    }
+    // Orden de desempate según el Reglamento del Torneo (criterios para 2+
+    // equipos empatados en puntos): 1) más partidos ganados, 2) mejor
+    // diferencia de gol, 3) más goles a favor, 4) resultado entre sí.
+    return Object.values(table).sort(function(x,y){
+      if(y.pts!==x.pts) return y.pts-x.pts;
+      if(y.pg!==x.pg) return y.pg-x.pg;
+      if(y.dg!==x.dg) return y.dg-x.dg;
+      if(y.gf!==x.gf) return y.gf-x.gf;
+      var h2h = headToHead(x.team, y.team);
+      if(h2h!==0) return -h2h;
+      return x.team.localeCompare(y.team, 'es');
+    });
+  }
+  function computeStandings(cat, zone){
+    return computeStandingsGeneric(groupMatches(cat, zone.id), zone.teams, cat.pointsWin, cat.pointsDraw, cat.pointsLoss);
+  }
+
+  /* ---------------- crossings (cruces) ---------------- */
+  function winnerOf(m){
+    if(m.status!=='final' || m.scoreA==null || m.scoreB==null) return null;
+    if(m.scoreA > m.scoreB) return 'A';
+    if(m.scoreB > m.scoreA) return 'B';
+    if(m.shootoutWinner) return m.shootoutWinner;
+    return null;
+  }
+  function winnerName(m){ var w=winnerOf(m); return w==='A'?m.teamA:(w==='B'?m.teamB:null); }
+  function loserName(m){ var w=winnerOf(m); if(!w) return null; return w==='A'?m.teamB:m.teamA; }
+
+  /* ---------------- generalized playoff engine ---------------- */
+  // A "source" describes where a bracket match's team comes from:
+  //   {k:'zonePos', zoneId, pos}   -> the team in position `pos` (1-indexed) of a zone's standings
+  //   {k:'tier', tier, rank}       -> the team ranked `rank` (1=best) among all zone-leaders of `tier`
+  //                                   (tier 1 = every zone's 1st place, tier 2 = every zone's 2nd place, etc.)
+  //   {k:'win', ref} / {k:'lose', ref} -> the winner/loser of the bracket match keyed `ref`
+
+  function computeTier(cat, tier){
+    if(!cat.zones.length) return null;
+    var allComplete = cat.zones.every(function(z){ return zoneComplete(cat, z.id); });
+    if(!allComplete) return null;
+    var rows = [];
+    cat.zones.forEach(function(z){
+      var st = computeStandings(cat, z);
+      var row = st[tier-1];
+      if(row) rows.push(row);
+    });
+    // Mismo orden de criterios que dentro de una zona (puntos, ganados,
+    // diferencia de gol, goles a favor); no aplica resultado entre sí porque
+    // son equipos de zonas distintas que no se enfrentaron.
+    rows.sort(function(x,y){
+      if(y.pts!==x.pts) return y.pts-x.pts;
+      if(y.pg!==x.pg) return y.pg-x.pg;
+      if(y.dg!==x.dg) return y.dg-x.dg;
+      if(y.gf!==x.gf) return y.gf-x.gf;
+      return x.team.localeCompare(y.team, 'es');
+    });
+    return rows;
+  }
+
+  function resolveSource(cat, src){
+    if(!src) return null;
+    if(src.k==='zonePos'){
+      var zone = cat.zones.find(function(z){ return z.id===src.zoneId; });
+      if(!zone || !zoneComplete(cat, zone.id)) return null;
+      var st = computeStandings(cat, zone);
+      var row = st[src.pos-1];
+      return row ? row.team : null;
+    }
+    if(src.k==='tier'){
+      var pool = computeTier(cat, src.tier);
+      if(!pool) return null;
+      var row = pool[src.rank-1];
+      return row ? row.team : null;
+    }
+    if(src.k==='win' || src.k==='lose'){
+      var m = cat.matches.find(function(x){ return x.key===src.ref; });
+      if(!m) return null;
+      var w = winnerOf(m);
+      if(!w) return null;
+      if(src.k==='win') return w==='A' ? m.teamA : m.teamB;
+      return w==='A' ? m.teamB : m.teamA;
+    }
+    return null;
+  }
+
+  // spec source-builders
+  function Zp(zoneId, pos, label){ return {src:{k:'zonePos', zoneId:zoneId, pos:pos}, label:label}; }
+  function Tr(tier, rank, label){ return {src:{k:'tier', tier:tier, rank:rank}, label:label}; }
+  function Wn(key){ return {src:{k:'win', ref:key}, label:'Ganador P.' + key}; }
+  function Ls(key){ return {src:{k:'lose', ref:key}, label:'Perdedor P.' + key}; }
+
+  function buildBracketSpecs(cat){
+    if(cat.format==='cruce2zonas'){
+      var zA = cat.zones[0], zB = cat.zones[1];
+      if(!zA || !zB) return null;
+      return [
+        {key:'21', group:'llave', round:'Definición 9°-10° (ida)', A:Zp(zA.id,5,'5° ' + zA.name), B:Zp(zB.id,5,'5° ' + zB.name)},
+        {key:'22', group:'llave', round:'Cruce', A:Zp(zA.id,3,'3° ' + zA.name), B:Zp(zB.id,4,'4° ' + zB.name)},
+        {key:'23', group:'llave', round:'Cruce', A:Zp(zB.id,3,'3° ' + zB.name), B:Zp(zA.id,4,'4° ' + zA.name)},
+        {key:'24', group:'llave', round:'Cruce', A:Zp(zA.id,1,'1° ' + zA.name), B:Zp(zB.id,2,'2° ' + zB.name)},
+        {key:'25', group:'llave', round:'Cruce', A:Zp(zB.id,1,'1° ' + zB.name), B:Zp(zA.id,2,'2° ' + zA.name)},
+        {key:'26', group:'llave', round:'Definición 9°-10° (vuelta)', A:Zp(zA.id,5,'5° ' + zA.name), B:Zp(zB.id,5,'5° ' + zB.name), posWin:9, posLose:10},
+        {key:'27', group:'llave', round:'Definición 7°-8°', A:Ls('22'), B:Ls('23'), posWin:7, posLose:8},
+        {key:'28', group:'llave', round:'Definición 5°-6°', A:Wn('22'), B:Wn('23'), posWin:5, posLose:6},
+        {key:'29', group:'llave', round:'Definición 3°-4°', A:Ls('24'), B:Ls('25'), posWin:3, posLose:4},
+        {key:'30', group:'llave', round:'Definición 1°-2°', A:Wn('24'), B:Wn('25'), posWin:1, posLose:2}
+      ];
+    }
+    if(cat.format==='copas5zonas'){
+      return [
+        // Copa Oro (puestos 1° a 8°)
+        {key:'37', group:'oro', round:'Cuartos', A:Tr(1,1,'Mejor 1°'), B:Tr(2,3,'Tercer 2°')},
+        {key:'38', group:'oro', round:'Cuartos', A:Tr(1,4,'Cuarto 1°'), B:Tr(1,5,'Quinto 1°')},
+        {key:'39', group:'oro', round:'Cuartos', A:Tr(1,3,'Tercer 1°'), B:Tr(2,1,'Mejor 2°')},
+        {key:'40', group:'oro', round:'Cuartos', A:Tr(2,2,'Segundo 2°'), B:Tr(1,2,'Segundo 1°')},
+        {key:'45', group:'oro', round:'Semifinal', A:Wn('37'), B:Wn('38')},
+        {key:'46', group:'oro', round:'Semifinal', A:Wn('39'), B:Wn('40')},
+        {key:'49', group:'oro', round:'Semifinal (5°-8°)', A:Ls('37'), B:Ls('38')},
+        {key:'50', group:'oro', round:'Semifinal (5°-8°)', A:Ls('39'), B:Ls('40')},
+        {key:'56', group:'oro', round:'Final', A:Wn('45'), B:Wn('46'), posWin:1, posLose:2},
+        {key:'55', group:'oro', round:'3° puesto', A:Ls('45'), B:Ls('46'), posWin:3, posLose:4},
+        {key:'60', group:'oro', round:'5° puesto', A:Wn('49'), B:Wn('50'), posWin:5, posLose:6},
+        {key:'59', group:'oro', round:'7° puesto', A:Ls('49'), B:Ls('50'), posWin:7, posLose:8},
+        // Copa Plata (puestos 9° a 16°)
+        {key:'33', group:'plata', round:'Cuartos', A:Tr(2,4,'Cuarto 2°'), B:Tr(4,1,'Mejor 4°')},
+        {key:'34', group:'plata', round:'Cuartos', A:Tr(3,2,'Segundo 3°'), B:Tr(3,3,'Tercer 3°')},
+        {key:'35', group:'plata', round:'Cuartos', A:Tr(3,1,'Mejor 3°'), B:Tr(3,4,'Cuarto 3°')},
+        {key:'36', group:'plata', round:'Cuartos', A:Tr(3,5,'Quinto 3°'), B:Tr(2,5,'Quinto 2°')},
+        {key:'43', group:'plata', round:'Semifinal', A:Wn('33'), B:Wn('34')},
+        {key:'44', group:'plata', round:'Semifinal', A:Wn('35'), B:Wn('36')},
+        {key:'47', group:'plata', round:'Semifinal (13°-16°)', A:Ls('33'), B:Ls('34')},
+        {key:'48', group:'plata', round:'Semifinal (13°-16°)', A:Ls('35'), B:Ls('36')},
+        {key:'54', group:'plata', round:'Final', A:Wn('43'), B:Wn('44'), posWin:9, posLose:10},
+        {key:'53', group:'plata', round:'3° puesto', A:Ls('43'), B:Ls('44'), posWin:11, posLose:12},
+        {key:'58', group:'plata', round:'5° puesto', A:Wn('47'), B:Wn('48'), posWin:13, posLose:14},
+        {key:'57', group:'plata', round:'7° puesto', A:Ls('47'), B:Ls('48'), posWin:15, posLose:16},
+        // Copa Estímulo (todos contra todos, puestos 17° a 20°)
+        {key:'31', group:'estimulo', round:'Estímulo', A:Tr(4,2,'Segundo 4°'), B:Tr(4,5,'Quinto 4°')},
+        {key:'32', group:'estimulo', round:'Estímulo', A:Tr(4,3,'Tercer 4°'), B:Tr(4,4,'Cuarto 4°')},
+        {key:'41', group:'estimulo', round:'Estímulo', A:Tr(4,2,'Segundo 4°'), B:Tr(4,4,'Cuarto 4°')},
+        {key:'42', group:'estimulo', round:'Estímulo', A:Tr(4,3,'Tercer 4°'), B:Tr(4,5,'Quinto 4°')},
+        {key:'51', group:'estimulo', round:'Estímulo', A:Tr(4,2,'Segundo 4°'), B:Tr(4,3,'Tercer 4°')},
+        {key:'52', group:'estimulo', round:'Estímulo', A:Tr(4,4,'Cuarto 4°'), B:Tr(4,5,'Quinto 4°')}
+      ];
+    }
+    if(cat.format==='copas4zonas'){
+      // Formato nuevo (4 zonas de 5 equipos, cruzadas de a pares A↔C y B↔D):
+      // 1° y 2° de las 4 zonas -> Copa Oro (8), 3° y 4° -> Copa Plata (8),
+      // 5° de las 4 zonas -> Copa Estímulo, todos contra todos (4).
+      var zA = cat.zones[0], zB = cat.zones[1], zC = cat.zones[2], zD = cat.zones[3];
+      if(!zA || !zB || !zC || !zD) return null;
+      var nA = zA.name, nB = zB.name, nC = zC.name, nD = zD.name;
+      return [
+        // Copa Oro (puestos 1° a 8°)
+        {key:'47', group:'oro', round:'Cuartos', A:Zp(zA.id,1,'1° ' + nA), B:Zp(zC.id,2,'2° ' + nC)},
+        {key:'48', group:'oro', round:'Cuartos', A:Zp(zB.id,1,'1° ' + nB), B:Zp(zD.id,2,'2° ' + nD)},
+        {key:'49', group:'oro', round:'Cuartos', A:Zp(zC.id,1,'1° ' + nC), B:Zp(zA.id,2,'2° ' + nA)},
+        {key:'50', group:'oro', round:'Cuartos', A:Zp(zD.id,1,'1° ' + nD), B:Zp(zB.id,2,'2° ' + nB)},
+        {key:'57', group:'oro', round:'Semifinal (5°-8°)', A:Ls('47'), B:Ls('49')},
+        {key:'58', group:'oro', round:'Semifinal (5°-8°)', A:Ls('48'), B:Ls('50')},
+        {key:'59', group:'oro', round:'Semifinal', A:Wn('47'), B:Wn('49')},
+        {key:'60', group:'oro', round:'Semifinal', A:Wn('48'), B:Wn('50')},
+        {key:'70', group:'oro', round:'Final', A:Wn('59'), B:Wn('60'), posWin:1, posLose:2},
+        {key:'69', group:'oro', round:'3° puesto', A:Ls('59'), B:Ls('60'), posWin:3, posLose:4},
+        {key:'68', group:'oro', round:'5° puesto', A:Wn('57'), B:Wn('58'), posWin:5, posLose:6},
+        {key:'67', group:'oro', round:'7° puesto', A:Ls('57'), B:Ls('58'), posWin:7, posLose:8},
+        // Copa Plata (puestos 9° a 16°)
+        {key:'43', group:'plata', round:'Cuartos', A:Zp(zA.id,3,'3° ' + nA), B:Zp(zC.id,4,'4° ' + nC)},
+        {key:'44', group:'plata', round:'Cuartos', A:Zp(zB.id,3,'3° ' + nB), B:Zp(zD.id,4,'4° ' + nD)},
+        {key:'45', group:'plata', round:'Cuartos', A:Zp(zC.id,3,'3° ' + nC), B:Zp(zA.id,4,'4° ' + nA)},
+        {key:'46', group:'plata', round:'Cuartos', A:Zp(zD.id,3,'3° ' + nD), B:Zp(zB.id,4,'4° ' + nB)},
+        {key:'53', group:'plata', round:'Semifinal (13°-16°)', A:Ls('43'), B:Ls('45')},
+        {key:'54', group:'plata', round:'Semifinal (13°-16°)', A:Ls('44'), B:Ls('46')},
+        {key:'55', group:'plata', round:'Semifinal', A:Wn('43'), B:Wn('45')},
+        {key:'56', group:'plata', round:'Semifinal', A:Wn('44'), B:Wn('46')},
+        {key:'66', group:'plata', round:'Final', A:Wn('55'), B:Wn('56'), posWin:9, posLose:10},
+        {key:'65', group:'plata', round:'3° puesto', A:Ls('55'), B:Ls('56'), posWin:11, posLose:12},
+        {key:'64', group:'plata', round:'5° puesto', A:Wn('53'), B:Wn('54'), posWin:13, posLose:14},
+        {key:'63', group:'plata', round:'7° puesto', A:Ls('53'), B:Ls('54'), posWin:15, posLose:16},
+        // Copa Estímulo (todos contra todos, puestos 17° a 20°)
+        {key:'41', group:'estimulo', round:'Estímulo', A:Zp(zA.id,5,'5° ' + nA), B:Zp(zC.id,5,'5° ' + nC)},
+        {key:'42', group:'estimulo', round:'Estímulo', A:Zp(zB.id,5,'5° ' + nB), B:Zp(zD.id,5,'5° ' + nD)},
+        {key:'51', group:'estimulo', round:'Estímulo', A:Zp(zA.id,5,'5° ' + nA), B:Zp(zB.id,5,'5° ' + nB)},
+        {key:'52', group:'estimulo', round:'Estímulo', A:Zp(zC.id,5,'5° ' + nC), B:Zp(zD.id,5,'5° ' + nD)},
+        {key:'61', group:'estimulo', round:'Estímulo', A:Zp(zA.id,5,'5° ' + nA), B:Zp(zD.id,5,'5° ' + nD)},
+        {key:'62', group:'estimulo', round:'Estímulo', A:Zp(zB.id,5,'5° ' + nB), B:Zp(zC.id,5,'5° ' + nC)}
+      ];
+    }
+    return null;
+  }
+
+  function syncPlayoffTeams(cat){
+    var specs = buildBracketSpecs(cat);
+    if(!specs) return;
+    specs.forEach(function(spec){
+      var teamA = resolveSource(cat, spec.A.src);
+      var teamB = resolveSource(cat, spec.B.src);
+      var m = cat.matches.find(function(x){ return x.key===spec.key; });
+      if(!m){
+        cat.matches.push(makeMatch({
+          stage:'bracket', key:spec.key, groupKey:spec.group, roundLabel:spec.round,
+          posWin: spec.posWin || null, posLose: spec.posLose || null,
+          slotLabelA: spec.A.label, slotLabelB: spec.B.label,
+          teamA: teamA, teamB: teamB
+        }));
+        return;
+      }
+      m.slotLabelA = spec.A.label; m.slotLabelB = spec.B.label;
+      m.groupKey = spec.group; m.roundLabel = spec.round;
+      m.posWin = spec.posWin || null; m.posLose = spec.posLose || null;
+      var changed = (teamA!==m.teamA) || (teamB!==m.teamB);
+      if(changed && m.status!=='pendiente'){
+        m.status = 'pendiente'; m.scoreA = null; m.scoreB = null; m.shootoutWinner = null;
+      }
+      m.teamA = teamA; m.teamB = teamB;
+    });
+  }
+
+  function computeEstimuloStandings(cat){
+    var teams;
+    if(cat.format==='copas4zonas'){
+      // Los equipos de la Copa Estímulo son el 5° de cada una de las 4 zonas.
+      if(!cat.zones.every(function(z){ return zoneComplete(cat, z.id); })) return null;
+      teams = cat.zones.map(function(z){
+        var st = computeStandings(cat, z);
+        var row = st[4];
+        return row ? row.team : null;
+      });
+      if(teams.some(function(t){ return !t; })) return null;
+    } else {
+      var pool = computeTier(cat, 4);
+      if(!pool || pool.length<5) return null;
+      teams = [pool[1].team, pool[2].team, pool[3].team, pool[4].team];
+    }
+    var matches = cat.matches.filter(function(m){ return m.groupKey==='estimulo'; });
+    return computeStandingsGeneric(matches, teams, cat.pointsWin, cat.pointsDraw, cat.pointsLoss);
+  }
+
+  function computeFinalStandings(cat){
+    var specs = buildBracketSpecs(cat);
+    if(!specs) return null;
+    var result = [];
+    specs.forEach(function(spec){
+      if(spec.posWin==null) return;
+      var m = cat.matches.find(function(x){ return x.key===spec.key; });
+      var w = m ? winnerOf(m) : null;
+      var winnerTeam = w ? (w==='A'?m.teamA:m.teamB) : null;
+      var loserTeam = w ? (w==='A'?m.teamB:m.teamA) : null;
+      result.push({pos:spec.posWin, team:winnerTeam});
+      result.push({pos:spec.posLose, team:loserTeam});
+    });
+    if(cat.format==='copas5zonas' || cat.format==='copas4zonas'){
+      var est = computeEstimuloStandings(cat);
+      for(var p=17;p<=20;p++){
+        result.push({pos:p, team: est ? (est[p-17] && est[p-17].team) : null});
+      }
+    }
+    result.sort(function(a,b){ return a.pos-b.pos; });
+    return result;
+  }
+
+  function ensureCrossings(cat){
+    if(cat.zones.length !== 2) return;
+    var zA = cat.zones[0], zB = cat.zones[1];
+    var groupsOk = zoneComplete(cat, zA.id) && zoneComplete(cat, zB.id);
+    var hasSemis = cat.matches.some(function(m){ return m.stage==='semifinal'; });
+    if(groupsOk && !hasSemis){
+      var stA = computeStandings(cat, zA), stB = computeStandings(cat, zB);
+      if(stA.length>=2 && stB.length>=2){
+        var sf1 = makeMatch({stage:'semifinal', slotLabelA:'1° ' + zA.name, slotLabelB:'2° ' + zB.name, teamA:stA[0].team, teamB:stB[1].team});
+        var sf2 = makeMatch({stage:'semifinal', slotLabelA:'1° ' + zB.name, slotLabelB:'2° ' + zA.name, teamA:stB[0].team, teamB:stA[1].team});
+        cat.matches.push(sf1, sf2);
+      }
+    }
+    var semis = cat.matches.filter(function(m){ return m.stage==='semifinal'; });
+    var bothResolved = semis.length===2 && semis.every(function(m){ return winnerOf(m)!==null; });
+    var hasFinal = cat.matches.some(function(m){ return m.stage==='final'; });
+    if(bothResolved && !hasFinal){
+      var w = semis.map(winnerName), l = semis.map(loserName);
+      cat.matches.push(makeMatch({stage:'final', slotLabelA:'Ganador SF1', slotLabelB:'Ganador SF2', teamA:w[0], teamB:w[1]}));
+      cat.matches.push(makeMatch({stage:'tercer', slotLabelA:'Perdedor SF1', slotLabelB:'Perdedor SF2', teamA:l[0], teamB:l[1]}));
+    }
+  }
+
+  function refreshCategory(cat){
+    if(cat.format==='cruce2zonas' || cat.format==='copas5zonas' || cat.format==='copas4zonas'){
+      syncPlayoffTeams(cat);
+      return;
+    }
+    refreshSimpleCategory(cat);
+  }
+
+  function refreshSimpleCategory(cat){
+    var semis = cat.matches.filter(function(m){ return m.stage==='semifinal'; });
+    if(semis.length && !semis.every(function(m){ return winnerOf(m)!==null; })){
+      cat.matches = cat.matches.filter(function(m){ return m.stage!=='final' && m.stage!=='tercer'; });
+    }
+    var zonesOk = cat.zones.length===2 && cat.zones.every(function(z){ return zoneComplete(cat, z.id); });
+    if(!zonesOk && semis.length){
+      cat.matches = cat.matches.filter(function(m){ return m.stage==='grupos'; });
+    }
+    ensureCrossings(cat);
+  }
+
+  /* ---------------- capability / persistence ---------------- */
+  function ensureCapability(){
+    if(capabilityChecked) return Promise.resolve(artifactNS);
+    capabilityChecked = true;
+    try{
+      if(window.claude && typeof window.claude.use === 'function'){
+        return window.claude.use('artifact').then(function(ns){ artifactNS = ns; return ns; }).catch(function(){ artifactNS=null; return null; });
+      }
+    }catch(e){}
+    return Promise.resolve(null);
+  }
+
+  function buildFullHtml(newState){
+    var scriptBody = 'const CSS = ' + JSON.stringify(CSS) + ';\n' +
+      'const HEAD_META = ' + JSON.stringify(HEAD_META) + ';\n' +
+      '(' + APP.toString() + ')(' + JSON.stringify(newState) + ');\n';
+    var safeScript = scriptBody.split('<\/script').join('<\\/script');
+    return '<!doctype html>\n<html lang="es">\n<head>\n' + HEAD_META + '\n<style>\n' + CSS + '\n</style>\n</head>\n<body>\n<div id="app"></div>\n<script>\n' + safeScript + '<\/script>\n</body>\n</html>\n';
+  }
+
+  function persist(successMsg){
+    STATE.updatedAt = new Date().toISOString();
+    render();
+    if(isReadOnly){ showToast('Este enlace es de solo lectura: los resultados los carga la organización del torneo.', true); return; }
+    ensureCapability().then(function(ns){
+      if(!ns){ showToast('Vista previa: los cambios no se están publicando desde acá.'); return; }
+      return ns.publish(buildFullHtml(STATE)).then(function(){
+        showToast(successMsg || 'Guardado y publicado.');
+      });
+    }).catch(function(err){
+      if(err && (err.code==='not_writer' || err.code==='not_granted')){
+        isReadOnly = true;
+        render();
+        showToast('Este enlace es de solo lectura: los resultados los carga la organización del torneo.', true);
+      } else if(err && err.code==='conflict'){
+        // otra publicación ganó; la vista se recarga sola
+      } else {
+        showToast('No se pudo publicar. Probá de nuevo en unos segundos.', true);
+      }
+    });
+  }
+
+  /* ---------------- Google Sheets sync ---------------- */
+  function ensureMcp(){
+    if(mcpChecked) return Promise.resolve(mcpNS);
+    mcpChecked = true;
+    try{
+      if(window.claude && typeof window.claude.use === 'function'){
+        return window.claude.use('mcp').then(function(ns){ mcpNS = ns; return ns; }).catch(function(){ mcpNS=null; return null; });
+      }
+    }catch(e){}
+    return Promise.resolve(null);
+  }
+
+  function mcpErrorMessage(err){
+    var code = err && err.code;
+    if(code==='needs_reauth') return 'Reconectá Google Drive en Configuración de Claude → Conectores.';
+    if(code==='server_not_connected') return 'No encontramos Google Drive conectado a tu cuenta de Claude.';
+    if(code==='selection_required') return 'Tenés más de una cuenta de Google conectada — elegí una desde el aviso de Claude.';
+    if(code==='blocked_by_policy') return 'Tu organización bloqueó el acceso a Google Drive desde esta página.';
+    if(code==='not_in_manifest') return 'Esta página no tiene autorización para leer esta planilla.';
+    if(code==='not_granted' || code==='capability_disabled') return 'La sincronización con Google no está disponible en esta vista.';
+    return 'No se pudo sincronizar. Probá de nuevo en unos segundos.';
+  }
+
+  function decodeBase64Utf8(b64){
+    var binary = atob(b64);
+    var bytes = new Uint8Array(binary.length);
+    for(var i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+
+  function parseCsv(text){
+    var rows = [], field = '', row = [], inQuotes = false, i = 0, n = text.length;
+    while(i<n){
+      var c = text[i];
+      if(inQuotes){
+        if(c === '"'){
+          if(text[i+1] === '"'){ field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
+        }
+        field += c; i++; continue;
+      } else {
+        if(c === '"'){ inQuotes = true; i++; continue; }
+        if(c === ','){ row.push(field); field = ''; i++; continue; }
+        if(c === '\r'){ i++; continue; }
+        if(c === '\n'){ row.push(field); rows.push(row); field=''; row=[]; i++; continue; }
+        field += c; i++; continue;
+      }
+    }
+    if(field.length || row.length){ row.push(field); rows.push(row); }
+    if(!rows.length) return [];
+    var headers = rows[0].map(function(h){ return h.trim(); });
+    return rows.slice(1).filter(function(r){ return r.some(function(v){ return v && v.trim(); }); }).map(function(r){
+      var obj = {};
+      headers.forEach(function(h, idx){ obj[h] = r[idx]!=null ? r[idx] : ''; });
+      return obj;
+    });
+  }
+
+  function stripAccents(s){
+    try{ return s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }catch(e){ return s; }
+  }
+
+  function normalizeStatus(estado, gaRaw, gbRaw){
+    var s = stripAccents((estado||'').trim().toLowerCase());
+    if(/final|termin|cerrad/.test(s)) return 'final';
+    if(/vivo|jugando|curso/.test(s)) return 'vivo';
+    if(/pendient|jugarse/.test(s)) return 'pendiente';
+    if(gaRaw!=='' && gbRaw!=='') return 'final';
+    if(gaRaw!=='' || gbRaw!=='') return 'vivo';
+    return 'pendiente';
+  }
+
+  function applySheetRows(rows){
+    var changed = false;
+    rows.forEach(function(r){
+      var catName = (r['Categoria']||r['Categoría']||'').trim();
+      var zoneName = (r['Zona']||'').trim();
+      var teamA = (r['EquipoA']||'').trim();
+      var teamB = (r['EquipoB']||'').trim();
+      if(!catName || !teamA || !teamB) return;
+      var cat = STATE.categories.find(function(c){ return c.name.trim().toLowerCase()===catName.toLowerCase(); });
+      if(!cat) return;
+      var zone = cat.zones.find(function(z){ return z.name.trim().toLowerCase()===zoneName.toLowerCase(); });
+      var m = cat.matches.find(function(x){
+        if(x.stage!=='grupos') return false;
+        if(zone && x.zoneId!==zone.id) return false;
+        return (x.teamA===teamA && x.teamB===teamB) || (x.teamA===teamB && x.teamB===teamA);
+      });
+      if(!m) return;
+      var gaRaw = (r['GolesA']==null ? '' : String(r['GolesA']).trim());
+      var gbRaw = (r['GolesB']==null ? '' : String(r['GolesB']).trim());
+      var status = normalizeStatus(r['Estado'], gaRaw, gbRaw);
+      var gaNum = gaRaw==='' ? null : parseInt(gaRaw, 10);
+      var gbNum = gbRaw==='' ? null : parseInt(gbRaw, 10);
+      if(gaRaw!=='' && isNaN(gaNum)) return;
+      if(gbRaw!=='' && isNaN(gbNum)) return;
+      var newScoreA = m.teamA===teamA ? gaNum : gbNum;
+      var newScoreB = m.teamA===teamA ? gbNum : gaNum;
+      if(newScoreA==null && newScoreB==null) status = 'pendiente';
+      if(m.scoreA!==newScoreA || m.scoreB!==newScoreB || m.status!==status){
+        m.scoreA = newScoreA; m.scoreB = newScoreB; m.status = status;
+        if(status!=='final') m.shootoutWinner = null;
+        changed = true;
+      }
+    });
+    return changed;
+  }
+
+  function extractSheetPayload(res){
+    var payload = res && (res.payload!=null ? res.payload : res);
+    if(typeof payload === 'string'){ try{ payload = JSON.parse(payload); }catch(e){} }
+    return payload;
+  }
+
+  function ingestSheetResult(res){
+    var payload = extractSheetPayload(res);
+    if(!payload || !payload.content) return false;
+    var text = decodeBase64Utf8(payload.content);
+    var rows = parseCsv(text);
+    var changed = applySheetRows(rows);
+    STATE.categories.forEach(function(c){ refreshCategory(c); });
+    return changed;
+  }
+
+  function syncNow(){
+    if(!STATE.sheet || !STATE.sheet.fileId){ return; }
+    sheetStatus = { state:'syncing', message:'Sincronizando…', lastSync: sheetStatus.lastSync };
+    render();
+    ensureMcp().then(function(mcp){
+      if(!mcp){ throw {code:'capability_disabled'}; }
+      return mcp.callTool('Google Drive', 'download_file_content', {fileId: STATE.sheet.fileId, exportMimeType:'text/csv'}, {cache:false});
+    }).then(function(res){
+      var changed = ingestSheetResult(res);
+      sheetStatus = { state:'ok', message: changed ? 'Sincronizado: se cargaron cambios.' : 'Sincronizado — sin cambios nuevos.', lastSync: new Date().toISOString() };
+      if(changed) persist('Resultados sincronizados desde Google Sheets.'); else render();
+    }).catch(function(err){
+      sheetStatus = { state:'error', message: mcpErrorMessage(err), lastSync: sheetStatus.lastSync };
+      render();
+    });
+  }
+
+  function startSheetWatch(){
+    if(sheetWatchUnsub || !STATE.sheet || !STATE.sheet.fileId) return;
+    ensureMcp().then(function(mcp){
+      if(!mcp){ sheetStatus = {state:'error', message:'La sincronización automática no está disponible en esta vista.', lastSync:sheetStatus.lastSync}; render(); return; }
+      sheetWatchUnsub = mcp.watchTool('Google Drive', 'download_file_content', {fileId: STATE.sheet.fileId, exportMimeType:'text/csv'}, function(ev){
+        if(ev.type==='error'){ sheetStatus = {state:'error', message: mcpErrorMessage(ev.error), lastSync: sheetStatus.lastSync}; render(); return; }
+        var changed = ingestSheetResult(ev.result);
+        sheetStatus = { state:'ok', message:'Sincronización automática activa.', lastSync:new Date().toISOString() };
+        if(changed) persist('Resultados actualizados desde Google Sheets.'); else render();
+      }, {refetchInterval: 30000});
+      sheetStatus = { state:'ok', message:'Sincronización automática activa.', lastSync:sheetStatus.lastSync };
+      render();
+    });
+  }
+
+  function stopSheetWatch(){
+    if(sheetWatchUnsub){ sheetWatchUnsub(); sheetWatchUnsub = null; }
+  }
+
+  function toggleAutoSync(on){
+    STATE.sheet = STATE.sheet || {};
+    STATE.sheet.autoSync = on;
+    if(on){ startSheetWatch(); }
+    else { stopSheetWatch(); sheetStatus = {state:'idle', message:'Sincronización automática desactivada.', lastSync:sheetStatus.lastSync}; }
+    persist(on ? 'Sincronización automática activada.' : 'Sincronización automática desactivada.');
+  }
+
+  function showToast(msg, isError){
+    var old = document.getElementById('appToast');
+    if(old) old.remove();
+    var t = document.createElement('div');
+    t.id = 'appToast';
+    t.className = 'toast' + (isError ? ' error' : '');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function(){ if(t.parentNode) t.remove(); }, 3600);
+  }
+
+  /* ---------------- rendering ---------------- */
+  function statusLabel(st){ return st==='pendiente' ? 'A jugarse' : (st==='vivo' ? 'En vivo' : 'Final'); }
+
+  function renderMatchCard(m, zoneTag){
+    var refNum = m.matchNum != null ? m.matchNum : m.key;
+    var winner = winnerOf(m);
+    var rowAClass = 'match-row' + (winner==='A' ? ' win' : '');
+    var rowBClass = 'match-row' + (winner==='B' ? ' win' : '');
+    var scoreA = m.scoreA==null ? '–' : m.scoreA;
+    var scoreB = m.scoreB==null ? '–' : m.scoreB;
+    var statusHtml = m.status==='vivo'
+      ? '<span class="live-dot"></span> En vivo'
+      : statusLabel(m.status);
+    return '' +
+      '<div class="match-card' + (m.status==='vivo' ? ' is-live' : '') + '">' +
+        '<div class="match-card-head">' +
+          '<div class="match-status ' + m.status + '">' + statusHtml + '</div>' +
+          '<span class="match-card-tags">' +
+            (refNum ? '<span class="match-num-tag">Partido ' + esc(refNum) + '</span>' : '') +
+            (zoneTag ? '<span class="match-zone-tag">' + esc(zoneTag) + '</span>' : '') +
+          '</span>' +
+        '</div>' +
+        '<div class="match-teams">' +
+          '<div class="' + rowAClass + '"><span class="match-team">' + esc(m.teamA || m.slotLabelA || 'A definir') + '</span><span class="match-score tabular">' + scoreA + '</span></div>' +
+          '<div class="' + rowBClass + '"><span class="match-team">' + esc(m.teamB || m.slotLabelB || 'A definir') + '</span><span class="match-score tabular">' + scoreB + '</span></div>' +
+        '</div>' +
+        (m.court || m.time ? '<div class="match-meta"><span>' + esc(m.court||'') + '</span><span>' + esc(m.time||'') + '</span></div>' : '') +
+      '</div>';
+  }
+
+  function renderStandings(cat, zone){
+    var st = computeStandings(cat, zone);
+    var rows = st.map(function(row, i){
+      return '<tr class="' + (i<2 ? 'qualifies' : '') + '">' +
+        '<td class="pos">' + (i+1) + '</td>' +
+        '<td class="team">' + esc(row.team) + '</td>' +
+        '<td class="tabular">' + row.pj + '</td>' +
+        '<td class="tabular">' + row.pg + '</td>' +
+        '<td class="tabular">' + row.pe + '</td>' +
+        '<td class="tabular">' + row.pp + '</td>' +
+        '<td class="tabular">' + row.gf + '</td>' +
+        '<td class="tabular">' + row.gc + '</td>' +
+        '<td class="tabular">' + (row.dg>0?'+':'') + row.dg + '</td>' +
+        '<td class="tabular pts">' + row.pts + '</td>' +
+      '</tr>';
+    }).join('');
+    return '<div class="standings-wrap"><table class="standings">' +
+      '<thead><tr><th>#</th><th style="text-align:left">Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table></div>';
+  }
+
+  function renderStandingsBlock(cat, zone){
+    var complete = zoneComplete(cat, zone.id);
+    return '<div class="zone-block">' +
+      '<div class="zone-head"><h3 class="zone-name">' + esc(zone.name) + '</h3><span class="zone-tag">' + (complete ? 'Fase de grupos cerrada' : 'Fase de grupos en curso') + '</span></div>' +
+      (zone.teams.length ? renderStandings(cat, zone) : '<p class="empty-note">Todavía no hay equipos cargados para esta zona.</p>') +
+    '</div>';
+  }
+
+  function renderStandingsSection(cat){
+    return cat.zones.map(function(z){ return renderStandingsBlock(cat, z); }).join('');
+  }
+
+  function renderFixtureSection(cat){
+    var matches = cat.matches.filter(function(m){ return m.stage==='grupos'; });
+    if(!matches.length) return '<p class="empty-note">Todavía no hay partidos cargados.</p>';
+    var zoneName = {};
+    cat.zones.forEach(function(z){ zoneName[z.id] = z.name; });
+    var byDay = {};
+    matches.forEach(function(m){
+      var d = m.day || '';
+      (byDay[d] = byDay[d] || []).push(m);
+    });
+    var days = Object.keys(byDay).sort(function(a,b){ return dayIndex(a) - dayIndex(b); });
+    return days.map(function(d){
+      var list = byDay[d].slice().sort(function(x,y){ return (x.time||'').localeCompare(y.time||''); });
+      return '<div class="day-block">' +
+        '<h3 class="day-title">' + esc(dayLabel(d)) + '</h3>' +
+        '<div class="match-grid">' + list.map(function(m){ return renderMatchCard(m, zoneName[m.zoneId]); }).join('') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderBracketMatch(m, fallbackLabelA, fallbackLabelB){
+    if(!m){
+      return '<div class="bracket-slot">' +
+        '<div class="match-row"><span class="match-team">' + esc(fallbackLabelA) + '</span></div>' +
+        '<div class="match-row"><span class="match-team">' + esc(fallbackLabelB) + '</span></div>' +
+      '</div>';
+    }
+    var winner = winnerOf(m);
+    var scoreA = m.scoreA==null ? '' : m.scoreA;
+    var scoreB = m.scoreB==null ? '' : m.scoreB;
+    var statusHtml = m.status==='vivo' ? '<span class="live-dot"></span> En vivo' : statusLabel(m.status);
+    var metaBits = [];
+    if(m.day) metaBits.push(dayLabel(m.day));
+    if(m.time) metaBits.push(m.time);
+    if(m.court) metaBits.push(m.court);
+    return '<div class="bracket-slot">' +
+      (m.status!=='pendiente' ? '<div class="match-status ' + m.status + '">' + statusHtml + '</div>' : '') +
+      '<div class="match-row' + (winner==='A'?' win':'') + '"><span class="match-team">' + esc(m.teamA || m.slotLabelA || 'A definir') + '</span><span class="match-score tabular">' + scoreA + '</span></div>' +
+      '<div class="match-row' + (winner==='B'?' win':'') + '"><span class="match-team">' + esc(m.teamB || m.slotLabelB || 'A definir') + '</span><span class="match-score tabular">' + scoreB + '</span></div>' +
+      (metaBits.length ? '<div class="match-meta"><span>' + esc(metaBits.join(' · ')) + '</span></div>' : '') +
+    '</div>';
+  }
+
+  function renderBracketMatchByKey(cat, key){
+    var m = cat.matches.find(function(x){ return x.key===key; });
+    if(!m) return renderBracketMatch(null, 'A definir', 'A definir');
+    return renderBracketMatch(m, m.slotLabelA||'A definir', m.slotLabelB||'A definir');
+  }
+
+  function renderStandingsGenericTable(rows, startPos){
+    var body = rows.map(function(row, i){
+      return '<tr>' +
+        '<td class="pos">' + (startPos+i) + '°</td>' +
+        '<td class="team">' + esc(row.team) + '</td>' +
+        '<td class="tabular">' + row.pj + '</td>' +
+        '<td class="tabular">' + row.pg + '</td>' +
+        '<td class="tabular">' + row.pe + '</td>' +
+        '<td class="tabular">' + row.pp + '</td>' +
+        '<td class="tabular">' + row.gf + '</td>' +
+        '<td class="tabular">' + row.gc + '</td>' +
+        '<td class="tabular">' + (row.dg>0?'+':'') + row.dg + '</td>' +
+        '<td class="tabular pts">' + row.pts + '</td>' +
+      '</tr>';
+    }).join('');
+    return '<div class="standings-wrap"><table class="standings">' +
+      '<thead><tr><th>#</th><th style="text-align:left">Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>' +
+      '<tbody>' + body + '</tbody></table></div>';
+  }
+
+  function renderFinalStandingsTable(cat){
+    var rows = computeFinalStandings(cat);
+    if(!rows || !rows.some(function(r){ return r.team; })) return '';
+    var body = rows.map(function(r){
+      return '<tr><td class="pos">' + r.pos + '°</td><td class="team">' + esc(r.team||'A definir') + '</td></tr>';
+    }).join('');
+    return '<div class="zone-block"><div class="zone-head"><h3 class="zone-name">Posiciones finales</h3></div>' +
+      '<div class="standings-wrap"><table class="standings"><thead><tr><th>#</th><th style="text-align:left">Equipo</th></tr></thead><tbody>' + body + '</tbody></table></div></div>';
+  }
+
+  function renderBracketRoundGroup(cat, specs, roundName){
+    var list = specs.filter(function(s){ return s.round===roundName; });
+    if(!list.length) return '';
+    return '<div class="bracket-round"><h4 class="bracket-round-title">' + esc(roundName) + '</h4><div class="bracket">' +
+      list.map(function(s){
+        var tag = s.posWin ? (' · ' + s.posWin + '°/' + s.posLose + '°') : '';
+        return '<div class="bracket-col"><div><div class="bracket-label">Partido ' + esc(s.key) + esc(tag) + '</div>' +
+          renderBracketMatchByKey(cat, s.key) + '</div></div>';
+      }).join('') +
+    '</div></div>';
+  }
+
+  function renderCascadeBracket(cat){
+    var specs = buildBracketSpecs(cat);
+    if(!specs) return '<p class="empty-note">Formato de llave no configurado para esta categoría.</p>';
+    var html = renderBracketRoundGroup(cat, specs, 'Cruce') + renderBracketRoundGroup(cat, specs, 'Definición');
+    html += renderFinalStandingsTable(cat);
+    return html;
+  }
+
+  function renderCopasBracket(cat){
+    var specs = buildBracketSpecs(cat);
+    if(!specs) return '<p class="empty-note">Formato de llave no configurado para esta categoría.</p>';
+    var cupOrder = [['oro','Copa Oro'], ['plata','Copa Plata'], ['estimulo','Copa Estímulo']];
+    var roundOrder = ['Cuartos','Semifinal','Semifinal (5°-8°)','Semifinal (13°-16°)','Final','3° puesto','5° puesto','7° puesto'];
+    var html = '';
+    cupOrder.forEach(function(pair){
+      var groupKey = pair[0], groupName = pair[1];
+      var groupSpecs = specs.filter(function(s){ return s.group===groupKey; });
+      if(!groupSpecs.length) return;
+      html += '<div class="cup-block"><h3 class="cup-title">' + esc(groupName) + '</h3>';
+      if(groupKey==='estimulo'){
+        html += '<div class="bracket">' + groupSpecs.map(function(s){
+          return '<div class="bracket-col"><div><div class="bracket-label">Partido ' + esc(s.key) + '</div>' +
+            renderBracketMatchByKey(cat, s.key) + '</div></div>';
+        }).join('') + '</div>';
+        var est = computeEstimuloStandings(cat);
+        html += est ? renderStandingsGenericTable(est, 17) : '<p class="empty-note">La tabla de la Copa Estímulo se arma cuando terminan de jugarse las 5 zonas.</p>';
+      } else {
+        roundOrder.forEach(function(rn){ html += renderBracketRoundGroup(cat, groupSpecs, rn); });
+      }
+      html += '</div>';
+    });
+    html += renderFinalStandingsTable(cat);
+    return html;
+  }
+
+  var BRACKET_GROUP_DISPLAY_NAMES = {llave:'Cruce', oro:'Copa Oro', plata:'Copa Plata', estimulo:'Copa Estímulo'};
+
+  // Cruces/copas ordenados por día y horario (no agrupados por copa/ronda) —
+  // misma presentación que el fixture de la fase de grupos, con una etiqueta
+  // de a qué copa/cruce pertenece cada partido.
+  function renderBracketFixtureSection(cat){
+    var matches = cat.matches.filter(function(m){ return m.stage==='bracket'; });
+    if(!matches.length) return '<p class="empty-note">Todavía no hay partidos cargados.</p>';
+    var byDay = {};
+    matches.forEach(function(m){
+      var d = m.day || '';
+      (byDay[d] = byDay[d] || []).push(m);
+    });
+    var days = Object.keys(byDay).sort(function(a,b){ return dayIndex(a) - dayIndex(b); });
+    var html = days.map(function(d){
+      var list = byDay[d].slice().sort(function(x,y){
+        var t = (x.time||'').localeCompare(y.time||'');
+        if(t!==0) return t;
+        return (Number(x.key)||0) - (Number(y.key)||0);
+      });
+      return '<div class="day-block">' +
+        '<h3 class="day-title">' + esc(dayLabel(d)) + '</h3>' +
+        '<div class="match-grid">' + list.map(function(m){
+          var tag = BRACKET_GROUP_DISPLAY_NAMES[m.groupKey] || '';
+          return renderMatchCard(m, tag);
+        }).join('') + '</div>' +
+      '</div>';
+    }).join('');
+    if(cat.format==='copas5zonas' || cat.format==='copas4zonas'){
+      var est = computeEstimuloStandings(cat);
+      html += '<div class="zone-block"><div class="zone-head"><h3 class="zone-name">Copa Estímulo</h3><span class="zone-tag">Posiciones 17° a 20°</span></div>' +
+        (est ? renderStandingsGenericTable(est, 17) : '<p class="empty-note">La tabla de la Copa Estímulo se arma cuando terminan de jugarse las 5 zonas.</p>') +
+      '</div>';
+    }
+    html += renderFinalStandingsTable(cat);
+    return html;
+  }
+
+  function renderCrossings(cat){
+    if(cat.format==='cruce2zonas' || cat.format==='copas5zonas' || cat.format==='copas4zonas') return renderBracketFixtureSection(cat);
+    return renderSimpleCrossings(cat);
+  }
+
+  function renderSimpleCrossings(cat){
+    if(cat.zones.length !== 2){
+      return '<p class="empty-note">Los cruces automáticos están disponibles para categorías con 2 zonas.</p>';
+    }
+    var semis = cat.matches.filter(function(m){ return m.stage==='semifinal'; });
+    var final = cat.matches.find(function(m){ return m.stage==='final'; });
+    var tercer = cat.matches.find(function(m){ return m.stage==='tercer'; });
+    if(!semis.length){
+      return '<div class="bracket-placeholder" style="max-width:420px">Se arman solos apenas terminan de jugarse las dos zonas.</div>';
+    }
+    var html = '<div class="bracket">' +
+      '<div class="bracket-col">' +
+        '<div><div class="bracket-label">Semifinal 1</div>' + renderBracketMatch(semis[0]) + '</div>' +
+        '<div><div class="bracket-label">Semifinal 2</div>' + renderBracketMatch(semis[1]) + '</div>' +
+      '</div>' +
+      '<div class="bracket-col final-col">' +
+        '<div><div class="bracket-label">Final</div>' + renderBracketMatch(final, 'Ganador SF1', 'Ganador SF2') + '</div>' +
+      '</div>' +
+    '</div>';
+    html += '<div class="third-place"><div class="bracket-label">Tercer puesto</div>' + renderBracketMatch(tercer, 'Perdedor SF1', 'Perdedor SF2') + '</div>';
+    return html;
+  }
+
+  function renderReadonlyBanner(){
+    if(!isReadOnly) return '';
+    return '<div class="readonly-banner"><span class="dot"></span> Estás viendo la versión pública. Los resultados los carga la organización del torneo.</div>';
+  }
+
+  function renderScorebar(){
+    var liveCount = 0;
+    STATE.categories.forEach(function(c){ c.matches.forEach(function(m){ if(m.status==='vivo') liveCount++; }); });
+    return '<div class="scorebar"><div class="scorebar-inner">' +
+      '<div class="brand-block">' +
+        (STATE.sponsorLogo ? '<img class="sponsor-logo" src="' + STATE.sponsorLogo + '" alt="Organiza">' : '') +
+        '<div>' +
+          '<p class="brand-eyebrow">Marcador en vivo</p>' +
+          '<h1 class="brand-title">' + esc(STATE.tournamentName) + '</h1>' +
+          (STATE.subtitle ? '<p class="brand-sub">' + esc(STATE.subtitle) + '</p>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="scorebar-meta">' +
+        (liveCount>0 ? '<span class="live-chip"><span class="live-dot"></span>' + liveCount + ' en vivo</span>' : '') +
+        '<span class="updated-chip">Actualizado ' + fmtUpdated(STATE.updatedAt) + '</span>' +
+        '<button class="tv-btn" data-action="toggle-tv" type="button">' + (document.body.classList.contains('tv-mode') ? 'Salir de modo pantalla' : 'Modo pantalla') + '</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="tabbar">' + STATE.categories.map(function(c){
+      return '<button class="tab" role="tab" aria-selected="' + (c.id===STATE.activeCategoryId && ui.view==='torneo') + '" data-action="switch-category" data-id="' + c.id + '" type="button">' + esc(c.name) + '</button>';
+    }).join('') +
+    '<button class="tab tab-info" role="tab" aria-selected="' + (ui.view==='modalidad') + '" data-action="show-modalidad" type="button">¿Cómo se juega?</button>' +
+    '</div></div>';
+  }
+
+  function renderMain(){
+    if(ui.view==='modalidad'){
+      var mcat = getCategory(ui.modalidadCategoryId) || getCategory(STATE.activeCategoryId);
+      if(!mcat) return '<div class="wrap"></div>';
+      return '<div class="wrap">' + renderModalidad(mcat) + '</div>';
+    }
+    var cat = getCategory(STATE.activeCategoryId);
+    if(!cat) return '<div class="wrap"></div>';
+    var isCopas = cat.format==='copas5zonas' || cat.format==='copas4zonas';
+    var groupNote = cat.format==='cruce2zonas'
+      ? 'Todos contra todos dentro de cada zona · después se cruzan para definir el 1° al 10°'
+      : (isCopas
+        ? 'Todos contra todos dentro de cada zona · después se arman la Copa Oro, Plata y Estímulo'
+        : 'Se clasifican los dos primeros de cada zona');
+    var crossTitle = cat.format==='cruce2zonas' ? 'Cruce de posiciones' : (isCopas ? 'Copas' : 'Cruces');
+    var crossNote = cat.format==='cruce2zonas' ? 'Define el orden del 1° al 10° · ordenado por día y horario' : (isCopas ? 'Copa Oro, Copa Plata y Copa Estímulo · ordenado por día y horario' : 'Semifinales, final y tercer puesto');
+    return '<div class="wrap">' +
+      '<div class="section">' +
+        '<div class="section-head"><h2 class="section-title">Fixture</h2><span class="section-note">' + esc(groupNote) + '</span></div>' +
+        renderFixtureSection(cat) +
+      '</div>' +
+      '<div class="section">' +
+        '<div class="section-head"><h2 class="section-title">Posiciones</h2><span class="section-note">Tabla de cada zona</span></div>' +
+        renderStandingsSection(cat) +
+      '</div>' +
+      '<div class="section">' +
+        '<div class="section-head"><h2 class="section-title">' + esc(crossTitle) + '</h2><span class="section-note">' + esc(crossNote) + '</span></div>' +
+        renderCrossings(cat) +
+      '</div>' +
+    '</div>';
+  }
+
+  /* ---------------- "¿Cómo se juega?" explainer ---------------- */
+  function renderModalidad(cat){
+    var picker = STATE.categories.map(function(c){
+      return '<button class="mod-cat-btn" role="tab" aria-selected="' + (c.id===cat.id) + '" data-action="modalidad-select-category" data-id="' + c.id + '" type="button">' + esc(c.name) + '</button>';
+    }).join('');
+    var body;
+    if(cat.format==='cruce2zonas') body = renderModalidadCruce(cat);
+    else if(cat.format==='copas5zonas') body = renderModalidadCopas(cat);
+    else if(cat.format==='copas4zonas') body = renderModalidadCopas4(cat);
+    else body = '<p class="empty-note">Todavía no hay una explicación cargada para el formato de esta categoría.</p>';
+    return '<div class="section">' +
+      '<div class="section-head"><h2 class="section-title">¿Cómo se juega?</h2></div>' +
+      '<div class="mod-cat-picker">' + picker + '</div>' +
+      body +
+    '</div>';
+  }
+
+  // Esquema visual del cruce de posiciones (1° vs 2° cruzados, 3° vs 4°
+  // cruzados, 5° vs 5° directo) — misma lógica que buildBracketSpecs para
+  // el formato 'cruce2zonas', mostrada como diagrama en el explicador.
+  function renderCruceDiagram(nameA, nameB){
+    var rowY = [70, 130, 190, 250, 310];
+    var pairs = [[0,1],[1,0],[2,3],[3,2],[4,4]]; // índice de fila A -> índice de fila B conectada
+    var boxes = '';
+    var badges = '';
+    var lines = '';
+    for(var i=0;i<5;i++){
+      var top = rowY[i] - 20;
+      boxes += '<rect class="cd-box" x="10" y="' + top + '" width="220" height="40" rx="8"></rect>';
+      boxes += '<rect class="cd-box" x="670" y="' + top + '" width="220" height="40" rx="8"></rect>';
+      badges += '<rect class="cd-badge-bg" x="245" y="' + top + '" width="50" height="40" rx="8"></rect>';
+      badges += '<text class="cd-badge-text" x="270" y="' + rowY[i] + '">' + (i+1) + '°</text>';
+      badges += '<rect class="cd-badge-bg" x="605" y="' + top + '" width="50" height="40" rx="8"></rect>';
+      badges += '<text class="cd-badge-text" x="630" y="' + rowY[i] + '">' + (i+1) + '°</text>';
+    }
+    pairs.forEach(function(p){
+      var y1 = rowY[p[0]], y2 = rowY[p[1]];
+      var cls = p[0]===p[1] ? 'cd-line-straight' : 'cd-line';
+      lines += '<line class="' + cls + '" x1="295" y1="' + y1 + '" x2="605" y2="' + y2 + '"></line>';
+    });
+    return '<svg class="cross-diagram" viewBox="0 0 900 340" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Esquema de cruce: 1° vs 2° cruzados, 3° vs 4° cruzados, 5° vs 5° directo">' +
+      '<text class="cd-col-label" x="120" y="24">' + esc(nameA) + '</text>' +
+      '<text class="cd-col-label" x="780" y="24">' + esc(nameB) + '</text>' +
+      lines + boxes + badges +
+    '</svg>';
+  }
+
+  // Esquema visual del cruce entre zonas para el formato de 4 zonas (Sub 14):
+  // 1° vs 2° cruzados (Copa Oro), 3° vs 4° cruzados (Copa Plata), 5° vs 5°
+  // directo (Copa Estímulo) — misma lógica que buildBracketSpecs para el
+  // formato 'copas4zonas', coloreada por copa para que se entienda de un vistazo.
+  function renderCruceDiagramCopas4Pair(nameLeft, nameRight){
+    var rowY = [70, 130, 190, 250, 310];
+    var pairs = [[0,1],[1,0],[2,3],[3,2],[4,4]];
+    var copaByRow = ['oro','oro','plata','plata','estimulo'];
+    var boxes = '';
+    var badges = '';
+    var lines = '';
+    for(var i=0;i<5;i++){
+      var top = rowY[i] - 20;
+      var copa = copaByRow[i];
+      boxes += '<rect class="cd-box" x="10" y="' + top + '" width="220" height="40" rx="8"></rect>';
+      boxes += '<rect class="cd-box" x="670" y="' + top + '" width="220" height="40" rx="8"></rect>';
+      badges += '<rect class="cd-badge-bg cd-badge-' + copa + '" x="245" y="' + top + '" width="50" height="40" rx="8"></rect>';
+      badges += '<text class="cd-badge-text cd-badge-text-' + copa + '" x="270" y="' + rowY[i] + '">' + (i+1) + '°</text>';
+      badges += '<rect class="cd-badge-bg cd-badge-' + copa + '" x="605" y="' + top + '" width="50" height="40" rx="8"></rect>';
+      badges += '<text class="cd-badge-text cd-badge-text-' + copa + '" x="630" y="' + rowY[i] + '">' + (i+1) + '°</text>';
+    }
+    pairs.forEach(function(p, i){
+      var y1 = rowY[p[0]], y2 = rowY[p[1]];
+      var copa = copaByRow[i];
+      var cls = (p[0]===p[1] ? 'cd-line-straight ' : 'cd-line ') + 'cd-line-' + copa;
+      lines += '<line class="' + cls + '" x1="295" y1="' + y1 + '" x2="605" y2="' + y2 + '"></line>';
+    });
+    return '<svg class="cross-diagram" viewBox="0 0 900 340" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Cruce ' + esc(nameLeft) + ' con ' + esc(nameRight) + ': 1° y 2° a Copa Oro, 3° y 4° a Copa Plata, 5° a Copa Estímulo">' +
+      '<text class="cd-col-label" x="120" y="24">' + esc(nameLeft) + '</text>' +
+      '<text class="cd-col-label" x="780" y="24">' + esc(nameRight) + '</text>' +
+      lines + boxes + badges +
+    '</svg>';
+  }
+
+  function renderCruceDiagramCopas4(nameA, nameC, nameB, nameD){
+    return '<div class="cross-diagram-pair">' +
+        '<div>' + renderCruceDiagramCopas4Pair(nameA, nameC) + '</div>' +
+        '<div>' + renderCruceDiagramCopas4Pair(nameB, nameD) + '</div>' +
+      '</div>' +
+      '<div class="cd-legend">' +
+        '<span><i class="cd-dot-oro"></i>1° y 2° → Copa Oro (puestos 1° a 8°)</span>' +
+        '<span><i class="cd-dot-plata"></i>3° y 4° → Copa Plata (puestos 9° a 16°)</span>' +
+        '<span><i class="cd-dot-estimulo"></i>5° → Copa Estímulo (puestos 17° a 20°)</span>' +
+      '</div>';
+  }
+
+  // Tabla-ejemplo de cómo queda armada la tabla final una vez jugadas Copa
+  // Oro y Copa Plata: 8 lugares por cada par de zonas (4 de Copa Oro +
+  // 4 de Copa Plata), con casilleros vacíos porque es solo un ejemplo del
+  // formato — los nombres reales aparecen en la sección de posiciones
+  // cuando se van jugando los cruces.
+  function renderPosicionesEjemploCopas4(nameLeft, nameRight){
+    var n = 8, top0 = 55, step = 62;
+    var rowY = [];
+    for(var i=0;i<n;i++) rowY.push(top0 + i*step);
+    var boxes = '', badges = '', lines = '';
+    for(var i=0;i<n;i++){
+      var y = rowY[i], top = y - 20;
+      var copa = i < 4 ? 'oro' : 'plata';
+      boxes += '<rect class="cd-box" x="10" y="' + top + '" width="220" height="40" rx="8"></rect>';
+      boxes += '<rect class="cd-box" x="670" y="' + top + '" width="220" height="40" rx="8"></rect>';
+      badges += '<rect class="cd-badge-bg cd-badge-' + copa + '" x="245" y="' + top + '" width="50" height="40" rx="8"></rect>';
+      badges += '<text class="cd-badge-text cd-badge-text-' + copa + '" x="270" y="' + y + '">' + (i+1) + '°</text>';
+      badges += '<rect class="cd-badge-bg cd-badge-' + copa + '" x="605" y="' + top + '" width="50" height="40" rx="8"></rect>';
+      badges += '<text class="cd-badge-text cd-badge-text-' + copa + '" x="630" y="' + y + '">' + (i+1) + '°</text>';
+      lines += '<line class="cd-line-straight cd-line-' + copa + '" x1="295" y1="' + y + '" x2="605" y2="' + y + '"></line>';
+    }
+    var totalHeight = rowY[n-1] + 55;
+    return '<svg class="cross-diagram" viewBox="0 0 900 ' + totalHeight + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Ejemplo de tabla final: 8 lugares (Copa Oro y Copa Plata) para ' + esc(nameLeft) + ' y 8 para ' + esc(nameRight) + '">' +
+      '<text class="cd-col-label" x="120" y="24">' + esc(nameLeft) + '</text>' +
+      '<text class="cd-col-label" x="780" y="24">' + esc(nameRight) + '</text>' +
+      lines + boxes + badges +
+    '</svg>';
+  }
+
+  // Tabla-ejemplo de Copa Estímulo: los 5° de las 4 zonas juegan todos
+  // contra todos (sin llave) y esa tabla define los puestos 17° a 20°;
+  // no se arma por par de zonas como Copa Oro/Plata, así que va en una
+  // sola columna centrada.
+  function renderPosicionesEjemploEstimulo(){
+    var n = 4, top0 = 45, step = 62;
+    var rowY = [];
+    for(var i=0;i<n;i++) rowY.push(top0 + i*step);
+    var boxes = '', badges = '';
+    for(var i=0;i<n;i++){
+      var y = rowY[i], top = y - 20;
+      boxes += '<rect class="cd-box" x="340" y="' + top + '" width="220" height="40" rx="8"></rect>';
+      badges += '<rect class="cd-badge-bg cd-badge-estimulo" x="575" y="' + top + '" width="50" height="40" rx="8"></rect>';
+      badges += '<text class="cd-badge-text cd-badge-text-estimulo" x="600" y="' + y + '">' + (17+i) + '°</text>';
+    }
+    var totalHeight = rowY[n-1] + 55;
+    return '<svg class="cross-diagram" viewBox="0 0 900 ' + totalHeight + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Ejemplo de tabla final: 4 lugares de Copa Estímulo, puestos 17° a 20°">' +
+      '<text class="cd-col-label" x="450" y="24">Copa Estímulo (5° de las 4 zonas)</text>' +
+      boxes + badges +
+    '</svg>';
+  }
+
+  function renderPosicionesEjemploCopas4Wrap(nA, nC, nB, nD){
+    var nameLeft = nA + ' + ' + nC, nameRight = nB + ' + ' + nD;
+    return '<p class="mod-example-label">Así va a quedar armada la tabla final una vez jugados los cruces (ejemplo, todavía sin equipos):</p>' +
+      renderPosicionesEjemploCopas4(nameLeft, nameRight) +
+      renderPosicionesEjemploEstimulo() +
+      '<div class="cd-legend">' +
+        '<span><i class="cd-dot-oro"></i>1° a 4°: los puestos de Copa Oro (1° a 8° del torneo)</span>' +
+        '<span><i class="cd-dot-plata"></i>5° a 8°: los puestos de Copa Plata (9° a 16° del torneo)</span>' +
+        '<span><i class="cd-dot-estimulo"></i>17° a 20°: los puestos de Copa Estímulo</span>' +
+      '</div>';
+  }
+
+  function renderModalidadCruce(cat){
+    var zA = cat.zones[0], zB = cat.zones[1];
+    var nameA = zA ? zA.name : 'Zona A', nameB = zB ? zB.name : 'Zona B';
+    var nA = zA ? zA.teams.length : 5, nB = zB ? zB.teams.length : 5;
+    return '' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">1</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Fase de grupos</h4>' +
+          '<p>Los equipos se dividen en 2 zonas. Dentro de cada zona juegan todos contra todos: 3 puntos por partido ganado, 1 por empate, 0 por derrota.</p>' +
+          '<div class="mod-flow">' +
+            '<span class="mod-chip">' + esc(nameA) + '<small>' + nA + ' equipos</small></span>' +
+            '<span class="mod-chip">' + esc(nameB) + '<small>' + nB + ' equipos</small></span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">2</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Cruce de posiciones — define el 1° al 10°</h4>' +
+          '<p>Terminada la fase de grupos, se cruzan las posiciones de las dos zonas. Ganadores contra ganadores y perdedores contra perdedores de cada cruce juegan una vez más para terminar de ordenar las posiciones dentro de cada grupo:</p>' +
+          renderCruceDiagram(nameA, nameB) +
+        '</div>' +
+      '</div>' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">3</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Desempates</h4>' +
+          '<p>Si dos o más equipos terminan igualados en puntos dentro de la fase de grupos, se ordenan por: partidos ganados, diferencia de gol, goles a favor y, por último, el resultado entre ellos.</p>' +
+          '<p>En la etapa de cruces, un partido empatado se define con 3 penales por equipo (ejecución alternada, jugadoras distintas); si persiste el empate, 1 penal por equipo alternando hasta definir ganador.</p>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderModalidadCopas(cat){
+    var zoneChips = cat.zones.map(function(z){
+      return '<span class="mod-chip">' + esc(z.name) + '<small>' + z.teams.length + ' equipos</small></span>';
+    }).join('');
+    var totalTeams = cat.zones.reduce(function(sum,z){ return sum + (z.teams.length||4); }, 0);
+    return '' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">1</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Fase de grupos</h4>' +
+          '<p>Los ' + (totalTeams||20) + ' equipos se dividen en ' + cat.zones.length + ' zonas. Dentro de cada zona juegan todos contra todos: 3 puntos por partido ganado, 1 por empate, 0 por derrota.</p>' +
+          '<div class="mod-flow">' + zoneChips + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">2</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Ranking cruzado entre zonas</h4>' +
+          '<p>No alcanza con salir 1° o 2° de la zona: se compara a todos los equipos que salieron 1° entre sí (¿quién fue el mejor 1°? ¿el segundo mejor?), y lo mismo con los que salieron 2dos, 3eros y 4tos en su zona.</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">3</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Con ese ranking se arman 3 copas</h4>' +
+          '<div class="mod-flow">' +
+            '<span class="mod-chip mod-chip-gold">Copa Oro<small>puestos 1° a 8°</small></span>' +
+            '<span class="mod-chip mod-chip-plata">Copa Plata<small>puestos 9° a 16°</small></span>' +
+            '<span class="mod-chip mod-chip-bronze">Copa Estímulo<small>puestos 17° a 20°</small></span>' +
+          '</div>' +
+          '<ul class="mod-list">' +
+            '<li><strong>Copa Oro:</strong> los 5 mejores 1eros + los 3 mejores 2dos.</li>' +
+            '<li><strong>Copa Plata:</strong> los 2 segundos restantes + los 5 terceros + el mejor 4°.</li>' +
+            '<li><strong>Copa Estímulo:</strong> los 4 cuartos restantes, todos contra todos.</li>' +
+          '</ul>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">4</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Copa Oro y Copa Plata: cuartos, semis y final</h4>' +
+          '<p>Cada copa junta 8 equipos y juega cuartos de final. Los que ganan sus cuartos siguen peleando los puestos más altos de esa copa (semifinal y final); los que pierden juegan entre ellos por los puestos más bajos de la misma copa. Así queda definida cada posición, del 1° al 16°. La Copa Estímulo no tiene llave: sus 4 equipos juegan todos contra todos y esa tabla define los puestos 17° a 20°.</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">5</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Desempates</h4>' +
+          '<p>Si dos o más equipos terminan igualados en puntos dentro de su zona, se ordenan por: partidos ganados, diferencia de gol, goles a favor y, por último, el resultado entre ellos.</p>' +
+          '<p>En cuartos, semis y finales de Copa Oro y Copa Plata, un partido empatado se define con 3 penales por equipo (ejecución alternada, jugadoras distintas); si persiste el empate, 1 penal por equipo alternando hasta definir ganador. La Copa Estímulo no tiene llave, así que sus partidos empatados quedan empatados en la tabla.</p>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderModalidadCopas4(cat){
+    var zoneChips = cat.zones.map(function(z){
+      return '<span class="mod-chip">' + esc(z.name) + '<small>' + z.teams.length + ' equipos</small></span>';
+    }).join('');
+    var totalTeams = cat.zones.reduce(function(sum,z){ return sum + (z.teams.length||5); }, 0);
+    var zNames = cat.zones.map(function(z){ return z.name; });
+    var nA = zNames[0]||'Zona A', nB = zNames[1]||'Zona B', nC = zNames[2]||'Zona C', nD = zNames[3]||'Zona D';
+    return '' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">1</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Fase de grupos</h4>' +
+          '<p>Los ' + (totalTeams||20) + ' equipos se dividen en ' + cat.zones.length + ' zonas. Dentro de cada zona juegan todos contra todos: 3 puntos por partido ganado, 1 por empate, 0 por derrota.</p>' +
+          '<div class="mod-flow">' + zoneChips + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">2</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Cruce entre zonas por posición</h4>' +
+          '<p>Terminada la fase de grupos, las zonas se cruzan de a pares — ' + esc(nA) + ' con ' + esc(nC) + ', y ' + esc(nB) + ' con ' + esc(nD) + '. El 1° de cada zona juega contra el 2° de la otra (cruzados) y ese cruce arma la Copa Oro; el 3° juega contra el 4° de la otra (cruzados) y arma la Copa Plata; los 5° de las cuatro zonas se juntan para la Copa Estímulo:</p>' +
+          renderCruceDiagramCopas4(nA, nC, nB, nD) +
+        '</div>' +
+      '</div>' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">3</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Con esos cruces se arman 3 copas</h4>' +
+          '<div class="mod-flow">' +
+            '<span class="mod-chip mod-chip-gold">Copa Oro<small>puestos 1° a 8°</small></span>' +
+            '<span class="mod-chip mod-chip-plata">Copa Plata<small>puestos 9° a 16°</small></span>' +
+            '<span class="mod-chip mod-chip-bronze">Copa Estímulo<small>puestos 17° a 20°</small></span>' +
+          '</div>' +
+          '<ul class="mod-list">' +
+            '<li><strong>Copa Oro:</strong> los 1° y 2° de las 4 zonas (8 equipos).</li>' +
+            '<li><strong>Copa Plata:</strong> los 3° y 4° de las 4 zonas (8 equipos).</li>' +
+            '<li><strong>Copa Estímulo:</strong> los 5° de las 4 zonas, todos contra todos (4 equipos).</li>' +
+          '</ul>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">4</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Copa Oro y Copa Plata: cuartos, semis y final</h4>' +
+          '<p>Cada copa junta 8 equipos y juega cuartos de final. Los que ganan sus cuartos siguen peleando los puestos más altos de esa copa (semifinal y final); los que pierden juegan entre ellos por los puestos más bajos de la misma copa. Así queda definida cada posición, del 1° al 16°. La Copa Estímulo no tiene llave: sus 4 equipos juegan todos contra todos y esa tabla define los puestos 17° a 20°.</p>' +
+          renderPosicionesEjemploCopas4Wrap(nA, nC, nB, nD) +
+        '</div>' +
+      '</div>' +
+      '<div class="mod-card">' +
+        '<div class="mod-step">5</div>' +
+        '<div class="mod-copy">' +
+          '<h4>Desempates</h4>' +
+          '<p>Si dos o más equipos terminan igualados en puntos dentro de su zona, se ordenan por: partidos ganados, diferencia de gol, goles a favor y, por último, el resultado entre ellos.</p>' +
+          '<p>En cuartos, semis y finales de Copa Oro y Copa Plata, un partido empatado se define con 3 penales por equipo (ejecución alternada, jugadoras distintas); si persiste el empate, 1 penal por equipo alternando hasta definir ganador. La Copa Estímulo no tiene llave, así que sus partidos empatados quedan empatados en la tabla.</p>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderFab(){
+    if(isReadOnly) return '';
+    if(!ui.adminUnlocked){
+      return '<button class="tv-btn admin-link" data-action="admin-gate" type="button">Organización</button>';
+    }
+    return '<button class="fab" data-action="open-admin" type="button"><span class="plus">+</span>Cargar resultado</button>';
+  }
+
+  function renderGate(){
+    return '<div class="modal-overlay" data-action="overlay">' +
+      '<div class="modal" style="max-width:360px">' +
+        '<div class="modal-head"><h3 class="modal-title">Acceso organización</h3><button class="modal-close" type="button" data-action="close-gate">×</button></div>' +
+        '<div class="modal-body">' +
+          '<form data-action="gate-form">' +
+            '<div class="field-row"><div><label>Código de acceso</label><input type="password" name="code" autocomplete="off" autofocus></div></div>' +
+            (ui.gateError ? '<p style="color:var(--loss);font-size:12.5px;margin:0 0 10px">Código incorrecto.</p>' : '') +
+            '<div class="btn-row"><button class="btn btn-primary" type="submit">Ingresar</button></div>' +
+          '</form>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  /* ---------------- admin modal ---------------- */
+  function adminMatchRow(m, label){
+    return '<button class="admin-match-row" type="button" data-action="select-match" data-id="' + m.id + '">' +
+      '<div>' +
+        '<div class="amr-teams">' + esc(m.teamA||m.slotLabelA||'A definir') + '<span class="vs">vs</span>' + esc(m.teamB||m.slotLabelB||'A definir') + '</div>' +
+        '<div class="amr-meta">' + esc(label) + (m.day?(' · ' + esc(dayLabel(m.day))):'') + (m.time?(' · ' + esc(m.time)):'') + (m.court?(' · ' + esc(m.court)):'') + '</div>' +
+      '</div>' +
+      '<span class="amr-status ' + m.status + '">' + statusLabel(m.status) + '</span>' +
+    '</button>';
+  }
+
+  function renderPartidosList(cat){
+    var out = '';
+    cat.zones.forEach(function(z){
+      var gm = groupMatches(cat, z.id);
+      if(!gm.length) return;
+      out += '<h4 style="margin:14px 0 4px;font-size:13px;color:var(--ink-muted)">' + esc(z.name) + '</h4>';
+      out += gm.map(function(m){ return adminMatchRow(m, m.matchNum ? ('Partido ' + m.matchNum + ' · Fase de grupos') : 'Fase de grupos'); }).join('');
+    });
+    if(cat.format==='cruce2zonas' || cat.format==='copas5zonas' || cat.format==='copas4zonas'){
+      var specs = buildBracketSpecs(cat) || [];
+      var groupNames = {llave:'Llave de posiciones', oro:'Copa Oro', plata:'Copa Plata', estimulo:'Copa Estímulo'};
+      var seenGroups = [];
+      specs.forEach(function(s){ if(seenGroups.indexOf(s.group)===-1) seenGroups.push(s.group); });
+      seenGroups.forEach(function(gk){
+        out += '<h4 style="margin:14px 0 4px;font-size:13px;color:var(--ink-muted)">' + esc(groupNames[gk]||gk) + '</h4>';
+        out += specs.filter(function(s){ return s.group===gk; }).map(function(s){
+          var m = cat.matches.find(function(x){ return x.key===s.key; });
+          if(!m) return '';
+          return adminMatchRow(m, 'Partido ' + s.key + ' · ' + s.round);
+        }).join('');
+      });
+    } else {
+      var semis = cat.matches.filter(function(m){ return m.stage==='semifinal'; });
+      if(semis.length){
+        out += '<h4 style="margin:14px 0 4px;font-size:13px;color:var(--ink-muted)">Semifinales</h4>';
+        out += semis.map(function(m,i){ return adminMatchRow(m, 'Semifinal ' + (i+1)); }).join('');
+      }
+      var final = cat.matches.find(function(m){ return m.stage==='final'; });
+      var tercer = cat.matches.find(function(m){ return m.stage==='tercer'; });
+      if(final || tercer){
+        out += '<h4 style="margin:14px 0 4px;font-size:13px;color:var(--ink-muted)">Cruces finales</h4>';
+        if(final) out += adminMatchRow(final, 'Final');
+        if(tercer) out += adminMatchRow(tercer, 'Tercer puesto');
+      }
+    }
+    if(!out) out = '<p class="empty-note">Esta categoría todavía no tiene partidos. Cargá los equipos en la pestaña "Equipos".</p>';
+    return out;
+  }
+
+  function renderScoreForm(cat, m){
+    var w = winnerOf(m);
+    var isDraw = m.status==='final' && m.scoreA!=null && m.scoreB!=null && m.scoreA===m.scoreB && m.stage!=='grupos' && !m.shootoutWinner;
+    var html = '<div class="score-form">' +
+      '<button class="btn btn-ghost" type="button" data-action="back-to-list" style="margin-bottom:12px">‹ Volver a partidos</button>' +
+      '<h4>' + esc(m.teamA||m.slotLabelA) + ' vs ' + esc(m.teamB||m.slotLabelB) + '</h4>' +
+      '<form data-action="score-form" data-match-id="' + m.id + '">' +
+        '<div class="score-teams"><label>' + esc(m.teamA||m.slotLabelA) + '</label><input type="number" min="0" name="scoreA" value="' + (m.scoreA==null?'':m.scoreA) + '"></div>' +
+        '<div class="score-teams"><label>' + esc(m.teamB||m.slotLabelB) + '</label><input type="number" min="0" name="scoreB" value="' + (m.scoreB==null?'':m.scoreB) + '"></div>' +
+        '<div class="field-row">' +
+          '<div><label>Día</label><select name="day">' +
+            '<option value=""' + (!m.day ? ' selected' : '') + '>Sin definir</option>' +
+            DAY_ORDER.map(function(d){ return '<option value="' + d + '"' + (m.day===d ? ' selected' : '') + '>' + esc(dayLabel(d)) + '</option>'; }).join('') +
+          '</select></div>' +
+          '<div><label>Cancha</label><input type="text" name="court" value="' + esc(m.court||'') + '"></div>' +
+          '<div><label>Horario</label><input type="text" name="time" value="' + esc(m.time||'') + '"></div>' +
+        '</div>' +
+        '<div class="btn-row">' +
+          '<button class="btn btn-live" type="submit" data-status="vivo">Guardar como EN VIVO</button>' +
+          '<button class="btn btn-primary" type="submit" data-status="final">Finalizar partido</button>' +
+          (m.status==='final' ? '<button class="btn btn-ghost" type="button" data-action="reopen-match" data-id="' + m.id + '">Reabrir</button>' : '') +
+        '</div>' +
+      '</form>' +
+      (isDraw ? (
+        '<div style="margin-top:14px;padding:12px;border:1px dashed var(--border);border-radius:10px">' +
+        '<p style="margin:0 0 8px;font-size:12.5px;color:var(--ink-muted)">Empataron. ¿Quién avanzó por definición (penales / shoot-out)?</p>' +
+        '<div class="btn-row">' +
+          '<button class="btn btn-ghost" type="button" data-action="set-shootout" data-id="' + m.id + '" data-winner="A">Ganó ' + esc(m.teamA) + '</button>' +
+          '<button class="btn btn-ghost" type="button" data-action="set-shootout" data-id="' + m.id + '" data-winner="B">Ganó ' + esc(m.teamB) + '</button>' +
+        '</div></div>'
+      ) : '') +
+    '</div>';
+    return html;
+  }
+
+  function renderTeamsTab(cat){
+    return cat.zones.map(function(z){
+      var armed = ui.confirmArmed[z.id];
+      var rows = z.teams.map(function(t, i){
+        return '<div style="display:flex;gap:6px"><input type="text" value="' + esc(t) + '" data-idx="' + i + '"><button class="btn btn-ghost" type="button" data-action="remove-team-row" data-zone="' + z.id + '" data-idx="' + i + '" style="padding:6px 10px">×</button></div>';
+      }).join('');
+      return '<div class="team-editor">' +
+        '<h4>' + esc(z.name) + '</h4>' +
+        '<form data-action="teams-form" data-zone-id="' + z.id + '">' +
+          '<div class="team-list" data-zone-list="' + z.id + '">' + rows + '</div>' +
+          '<div class="btn-row">' +
+            '<button class="btn btn-ghost" type="button" data-action="add-team-row" data-zone="' + z.id + '">+ Agregar equipo</button>' +
+            '<button class="btn ' + (armed?'btn-danger':'btn-primary') + '" type="submit">' + (armed ? '¿Confirmar? Se pierden los resultados de esta zona' : 'Guardar equipos y armar fixture') + '</button>' +
+          '</div>' +
+        '</form>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderTorneoTab(cat){
+    return '<form data-action="tournament-form">' +
+      '<div class="field-row"><div><label>Nombre del torneo</label><input type="text" name="tournamentName" value="' + esc(STATE.tournamentName) + '"></div></div>' +
+      '<div class="field-row"><div><label>Bajada / aclaración</label><input type="text" name="subtitle" value="' + esc(STATE.subtitle||'') + '"></div></div>' +
+      '<div class="field-row"><div><label>Nombre de esta categoría</label><input type="text" name="categoryName" value="' + esc(cat.name) + '"></div></div>' +
+      '<div class="field-row">' +
+        '<div><label>Puntos por victoria</label><input type="text" inputmode="numeric" name="pointsWin" value="' + cat.pointsWin + '"></div>' +
+        '<div><label>Puntos por empate</label><input type="text" inputmode="numeric" name="pointsDraw" value="' + cat.pointsDraw + '"></div>' +
+        '<div><label>Puntos por derrota</label><input type="text" inputmode="numeric" name="pointsLoss" value="' + cat.pointsLoss + '"></div>' +
+      '</div>' +
+      '<div class="field-row"><div><label>Código de acceso (organización)</label><input type="text" name="accessCode" value="' + esc(STATE.accessCode||'') + '"></div></div>' +
+      '<div class="btn-row"><button class="btn btn-primary" type="submit">Guardar</button></div>' +
+    '</form>';
+  }
+
+  function renderExcelTab(){
+    var sheet = STATE.sheet || {};
+    var statusColor = sheetStatus.state==='error' ? 'var(--loss)' : (sheetStatus.state==='ok' ? 'var(--win)' : 'var(--ink-muted)');
+    return '' +
+      '<p style="font-size:13px;color:var(--ink-muted);margin:0 0 12px">Cargá los resultados de la fase de grupos en tu planilla de Google Sheets, como todos los años. Esta página los toma solos por Categoría + Zona + Equipos (las columnas Cancha y Horario son solo de referencia). Las semifinales, final y tercer puesto se siguen cargando acá, en "Partidos".</p>' +
+      (sheet.url ? '<p style="margin:0 0 14px"><a href="' + esc(sheet.url) + '" target="_blank" rel="noopener" style="color:var(--turf-600);font-weight:600">Abrir la planilla en Google Sheets ↗</a></p>' : '<p class="empty-note">Todavía no hay una planilla vinculada.</p>') +
+      '<div class="btn-row" style="margin-bottom:10px">' +
+        '<button class="btn btn-primary" type="button" data-action="sync-now"' + (sheetStatus.state==='syncing'?' disabled':'') + '>Sincronizar ahora</button>' +
+        '<button class="btn ' + (sheet.autoSync ? 'btn-primary' : 'btn-ghost') + '" type="button" data-action="toggle-autosync" data-on="' + (sheet.autoSync ? '0' : '1') + '">' + (sheet.autoSync ? 'Desactivar sincronización automática' : 'Activar sincronización automática') + '</button>' +
+      '</div>' +
+      '<p style="font-size:12.5px;color:' + statusColor + '">' + esc(sheetStatus.message || 'Sin sincronizar todavía.') + '</p>' +
+      (sheetStatus.lastSync ? '<p class="mono" style="font-size:11px;color:var(--ink-muted)">Última sincronización: ' + fmtUpdated(sheetStatus.lastSync) + '</p>' : '');
+  }
+
+  function renderModal(){
+    var cat = getCategory(ui.adminCategoryId) || STATE.categories[0];
+    var selected = ui.selectedMatchId ? cat.matches.find(function(m){ return m.id===ui.selectedMatchId; }) : null;
+    var body = '';
+    if(ui.modalTab==='partidos'){
+      body = selected ? renderScoreForm(cat, selected) : renderPartidosList(cat);
+    } else if(ui.modalTab==='equipos'){
+      body = renderTeamsTab(cat);
+    } else if(ui.modalTab==='excel'){
+      body = renderExcelTab();
+    } else {
+      body = renderTorneoTab(cat);
+    }
+    return '<div class="modal-overlay" data-action="overlay">' +
+      '<div class="modal">' +
+        '<div class="modal-head"><h3 class="modal-title">Cargar resultados</h3><button class="modal-close" type="button" data-action="close-admin">×</button></div>' +
+        '<div style="padding:10px 16px 0;display:flex;gap:6px;flex-wrap:wrap">' + STATE.categories.map(function(c){
+          return '<button class="modal-tab" type="button" aria-selected="' + (c.id===ui.adminCategoryId) + '" data-action="admin-category" data-id="' + c.id + '">' + esc(c.name) + '</button>';
+        }).join('') + '</div>' +
+        '<div class="modal-tabs">' +
+          '<button class="modal-tab" type="button" aria-selected="' + (ui.modalTab==='partidos') + '" data-action="modal-tab" data-tab="partidos">Partidos</button>' +
+          '<button class="modal-tab" type="button" aria-selected="' + (ui.modalTab==='equipos') + '" data-action="modal-tab" data-tab="equipos">Equipos</button>' +
+          '<button class="modal-tab" type="button" aria-selected="' + (ui.modalTab==='excel') + '" data-action="modal-tab" data-tab="excel">Excel</button>' +
+          '<button class="modal-tab" type="button" aria-selected="' + (ui.modalTab==='torneo') + '" data-action="modal-tab" data-tab="torneo">Torneo</button>' +
+        '</div>' +
+        '<div class="modal-body">' + body + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  /* ---------------- render root ---------------- */
+  function render(){
+    var app = document.getElementById('app');
+    if(!app) return;
+    app.innerHTML = renderReadonlyBanner() + renderScorebar() + renderMain() + renderFab() + (ui.gateOpen ? renderGate() : '') + (ui.modalOpen ? renderModal() : '');
+  }
+
+  /* ---------------- actions ---------------- */
+  function submitScoreForm(form, submitter){
+    var matchId = form.dataset.matchId;
+    var cat = getCategory(ui.adminCategoryId);
+    var m = cat.matches.find(function(x){ return x.id===matchId; });
+    if(!m) return;
+    var scoreA = parseInt(form.elements['scoreA'].value, 10);
+    var scoreB = parseInt(form.elements['scoreB'].value, 10);
+    m.scoreA = isNaN(scoreA) ? 0 : scoreA;
+    m.scoreB = isNaN(scoreB) ? 0 : scoreB;
+    if(form.elements['court']) m.court = form.elements['court'].value;
+    if(form.elements['time']) m.time = form.elements['time'].value;
+    if(form.elements['day']) m.day = form.elements['day'].value || null;
+    m.status = (submitter && submitter.dataset.status) || 'vivo';
+    if(m.status==='final' && m.scoreA!==m.scoreB) m.shootoutWinner = null;
+    refreshCategory(cat);
+    ui.selectedMatchId = null;
+    persist('Resultado guardado.');
+  }
+
+  function submitTeamsForm(form){
+    var zoneId = form.dataset.zoneId;
+    var armed = ui.confirmArmed[zoneId];
+    if(!armed){
+      ui.confirmArmed[zoneId] = true;
+      render();
+      return;
+    }
+    var inputs = form.querySelectorAll('[data-zone-list] input[type=text]');
+    var names = Array.prototype.map.call(inputs, function(i){ return i.value; });
+    var cat = getCategory(ui.adminCategoryId);
+    if(names.filter(Boolean).length < 2){
+      showToast('Cargá al menos 2 equipos para armar el fixture.', true);
+      return;
+    }
+    regenerateZoneFixture(cat, zoneId, names);
+    ui.confirmArmed[zoneId] = false;
+    refreshCategory(cat);
+    persist('Equipos actualizados y fixture generado.');
+  }
+
+  function submitTournamentForm(form){
+    var cat = getCategory(ui.adminCategoryId);
+    STATE.tournamentName = form.elements['tournamentName'].value || STATE.tournamentName;
+    STATE.subtitle = form.elements['subtitle'].value;
+    cat.name = form.elements['categoryName'].value || cat.name;
+    var pw = parseInt(form.elements['pointsWin'].value, 10);
+    var pd = parseInt(form.elements['pointsDraw'].value, 10);
+    var pl = parseInt(form.elements['pointsLoss'].value, 10);
+    cat.pointsWin = isNaN(pw) ? cat.pointsWin : pw;
+    cat.pointsDraw = isNaN(pd) ? cat.pointsDraw : pd;
+    cat.pointsLoss = isNaN(pl) ? cat.pointsLoss : pl;
+    if(form.elements['accessCode']) STATE.accessCode = form.elements['accessCode'].value || STATE.accessCode;
+    persist('Datos del torneo actualizados.');
+  }
+
+  function submitGateForm(form){
+    var val = (form.elements['code'].value || '').trim().toLowerCase();
+    var expected = (STATE.accessCode || '').trim().toLowerCase();
+    if(val && expected && val === expected){
+      ui.adminUnlocked = true;
+      try{ sessionStorage.setItem('hockeyAdminUnlocked', '1'); }catch(e){}
+      ui.gateOpen = false; ui.gateError = false;
+      ui.modalOpen = true; ui.modalTab = 'partidos'; ui.selectedMatchId = null; ui.adminCategoryId = STATE.activeCategoryId;
+      if(STATE.sheet && STATE.sheet.autoSync) startSheetWatch();
+      render();
+    } else {
+      ui.gateError = true;
+      render();
+    }
+  }
+
+  function handleAction(action, ds){
+    if(action==='switch-category'){ STATE.activeCategoryId = ds.id; ui.adminCategoryId = ds.id; ui.view='torneo'; render(); }
+    else if(action==='show-modalidad'){ ui.view = 'modalidad'; ui.modalidadCategoryId = STATE.activeCategoryId; render(); }
+    else if(action==='modalidad-select-category'){ ui.modalidadCategoryId = ds.id; render(); }
+    else if(action==='toggle-tv'){
+      document.body.classList.toggle('tv-mode');
+      if(document.body.classList.contains('tv-mode')){
+        tvTimer = setInterval(function(){
+          if(STATE.categories.length<2) return;
+          ui.tvIndex = (ui.tvIndex+1) % STATE.categories.length;
+          STATE.activeCategoryId = STATE.categories[ui.tvIndex].id;
+          render();
+        }, 15000);
+      } else if(tvTimer){ clearInterval(tvTimer); tvTimer=null; }
+      render();
+    }
+    else if(action==='open-admin'){ ui.modalOpen=true; ui.modalTab='partidos'; ui.selectedMatchId=null; ui.adminCategoryId = STATE.activeCategoryId; render(); }
+    else if(action==='close-admin'){ ui.modalOpen=false; ui.selectedMatchId=null; render(); }
+    else if(action==='overlay'){ /* handled by click target check in listener */ }
+    else if(action==='modal-tab'){ ui.modalTab = ds.tab; ui.selectedMatchId=null; render(); }
+    else if(action==='admin-category'){ ui.adminCategoryId = ds.id; ui.selectedMatchId=null; render(); }
+    else if(action==='select-match'){ ui.selectedMatchId = ds.id; render(); }
+    else if(action==='back-to-list'){ ui.selectedMatchId=null; render(); }
+    else if(action==='add-team-row'){
+      var cat = getCategory(ui.adminCategoryId);
+      var zone = cat.zones.find(function(z){ return z.id===ds.zone; });
+      zone.teams.push('');
+      render();
+    }
+    else if(action==='remove-team-row'){
+      var cat2 = getCategory(ui.adminCategoryId);
+      var zone2 = cat2.zones.find(function(z){ return z.id===ds.zone; });
+      zone2.teams.splice(parseInt(ds.idx,10), 1);
+      render();
+    }
+    else if(action==='reopen-match'){
+      var cat3 = getCategory(ui.adminCategoryId);
+      var m3 = cat3.matches.find(function(x){ return x.id===ds.id; });
+      if(m3){ m3.status='vivo'; refreshCategory(cat3); persist('Partido reabierto.'); }
+    }
+    else if(action==='set-shootout'){
+      var cat4 = getCategory(ui.adminCategoryId);
+      var m4 = cat4.matches.find(function(x){ return x.id===ds.id; });
+      if(m4){ m4.shootoutWinner = ds.winner; refreshCategory(cat4); persist('Resultado guardado.'); }
+    }
+    else if(action==='admin-gate'){ ui.gateOpen=true; ui.gateError=false; render(); }
+    else if(action==='close-gate'){ ui.gateOpen=false; render(); }
+    else if(action==='sync-now'){ syncNow(); }
+    else if(action==='toggle-autosync'){ toggleAutoSync(ds.on==='1'); }
+  }
+
+  /* ---------------- boot ---------------- */
+  document.addEventListener('click', function(e){
+    var overlay = e.target.classList && e.target.classList.contains('modal-overlay');
+    if(overlay){
+      if(ui.gateOpen){ ui.gateOpen=false; } else { ui.modalOpen=false; ui.selectedMatchId=null; }
+      render(); return;
+    }
+    var el = e.target.closest('[data-action]');
+    if(!el) return;
+    if(el.tagName==='FORM' || el.type==='submit') return; // handled by the submit listener
+    handleAction(el.dataset.action, el.dataset);
+  });
+  document.addEventListener('submit', function(e){
+    var form = e.target;
+    if(!form.dataset || !form.dataset.action) return;
+    e.preventDefault();
+    if(form.dataset.action==='score-form') submitScoreForm(form, e.submitter);
+    else if(form.dataset.action==='teams-form') submitTeamsForm(form);
+    else if(form.dataset.action==='tournament-form') submitTournamentForm(form);
+    else if(form.dataset.action==='gate-form') submitGateForm(form);
+  });
+
+  // ---- one-time demo seeding (only present on the very first boot of a fresh
+  // tournament; build the fixture from team lists, then apply scripted results) ----
+  STATE.categories.forEach(function(cat){
+    if(cat.__seedZones){
+      cat.__seedZones.forEach(function(sz){ regenerateZoneFixture(cat, sz.zoneId, sz.teams); });
+      delete cat.__seedZones;
+    }
+  });
+  STATE.categories.forEach(function(cat){
+    if(cat.__seedResults){
+      cat.__seedResults.forEach(function(r){
+        var m = cat.matches.find(function(x){
+          return x.stage==='grupos' && ((x.teamA===r.a && x.teamB===r.b) || (x.teamA===r.b && x.teamB===r.a));
+        });
+        if(m){
+          if(m.teamA===r.a){ m.scoreA=r.scoreA; m.scoreB=r.scoreB; } else { m.scoreA=r.scoreB; m.scoreB=r.scoreA; }
+          m.status = r.status || 'final';
+        }
+      });
+      delete cat.__seedResults;
+    }
+  });
+  STATE.categories.forEach(function(c){ refreshCategory(c); });
+  STATE.categories.forEach(function(cat){
+    if(cat.__seedSemis){
+      var semis = cat.matches.filter(function(m){ return m.stage==='semifinal'; });
+      cat.__seedSemis.forEach(function(s){
+        if(semis[s.index]){ semis[s.index].scoreA=s.scoreA; semis[s.index].scoreB=s.scoreB; semis[s.index].status=s.status; }
+      });
+      delete cat.__seedSemis;
+      refreshCategory(cat);
+    }
+  });
+
+  ensureCapability();
+  if(ui.adminUnlocked && STATE.sheet && STATE.sheet.autoSync){ startSheetWatch(); }
+  render();
+}
+
+APP({"tournamentName":"20° Encuentro Torneo Internacional de Hockey","subtitle":"Carlos Paz Rugby Club · 25, 26 y 27 de septiembre","sponsorLogo":"data:image/png;base64,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","updatedAt":"2026-09-23T17:15:04.626Z","activeCategoryId":"sub16","accessCode":"TORNEO2026","sheet":{"fileId":null,"url":null,"autoSync":false},"categories":[{"id":"sub16","name":"Sub 16","format":"cruce2zonas","pointsWin":3,"pointsDraw":1,"pointsLoss":0,"zones":[{"id":"A","name":"Zona A","teams":["Dep. Libertad San Fco","CAI Ricardone","Carlos Paz RC B","Uni Nacional del Chaco Austral","CAI Escobar"]},{"id":"B","name":"Zona B","teams":["Liga del Sudeste Cordobés","Puerto San Gregorio","Banco Rugby Mendoza","Neuquén RC","Carlos Paz RC A"]}],"matches":[{"id":"mbqvv0q125fnw","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"CAI Ricardone","teamB":"CAI Escobar","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"17:00","shootoutWinner":null,"day":"sab","matchNum":17},{"id":"m7t4w0mru5fnw","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Carlos Paz RC B","teamB":"Uni Nacional del Chaco Austral","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"16:10","shootoutWinner":null,"day":"sab","matchNum":15},{"id":"m92vcs0lz5fnw","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Dep. Libertad San Fco","teamB":"CAI Escobar","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"15:20","shootoutWinner":null,"day":"sab","matchNum":13},{"id":"mo12xsjyd5fnw","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"CAI Ricardone","teamB":"Carlos Paz RC B","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"15:20","shootoutWinner":null,"day":"vie","matchNum":3},{"id":"mks3p4jhu5fnw","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Dep. Libertad San Fco","teamB":"Uni Nacional del Chaco Austral","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"14:30","shootoutWinner":null,"day":"vie","matchNum":1},{"id":"m9rqdxuqf5fnw","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"CAI Escobar","teamB":"Carlos Paz RC B","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"17:50","shootoutWinner":null,"day":"vie","matchNum":9},{"id":"mpjjbutxe5fnw","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Dep. Libertad San Fco","teamB":"Carlos Paz RC B","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"17:50","shootoutWinner":null,"day":"sab","matchNum":19},{"id":"mfcbgrp5f5fnw","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Uni Nacional del Chaco Austral","teamB":"CAI Ricardone","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"14:30","shootoutWinner":null,"day":"sab","matchNum":11},{"id":"m03gu2z4y5fnw","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Dep. Libertad San Fco","teamB":"CAI Ricardone","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"17:00","shootoutWinner":null,"day":"vie","matchNum":7},{"id":"mfe6g74py5fnw","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Uni Nacional del Chaco Austral","teamB":"CAI Escobar","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"16:10","shootoutWinner":null,"day":"vie","matchNum":5},{"id":"mlmn1qv9v5fnw","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Puerto San Gregorio","teamB":"Carlos Paz RC A","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"17:25","shootoutWinner":null,"day":"sab","matchNum":18},{"id":"mdc92avxp5fnw","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Banco Rugby Mendoza","teamB":"Neuquén RC","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"16:35","shootoutWinner":null,"day":"sab","matchNum":16},{"id":"mu9u5j6ne5fnw","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Liga del Sudeste Cordobés","teamB":"Carlos Paz RC A","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"15:45","shootoutWinner":null,"day":"sab","matchNum":14},{"id":"m0bsft9q85fnw","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Puerto San Gregorio","teamB":"Banco Rugby Mendoza","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"15:45","shootoutWinner":null,"day":"vie","matchNum":4},{"id":"mpydkbb2e5fnw","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Liga del Sudeste Cordobés","teamB":"Neuquén RC","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"14:55","shootoutWinner":null,"day":"vie","matchNum":2},{"id":"mdgsrtykw5fnw","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Carlos Paz RC A","teamB":"Banco Rugby Mendoza","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"18:15","shootoutWinner":null,"day":"vie","matchNum":10},{"id":"m3w0al4os5fnw","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Liga del Sudeste Cordobés","teamB":"Banco Rugby Mendoza","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"18:15","shootoutWinner":null,"day":"sab","matchNum":20},{"id":"mjnku1x0r5fnw","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Neuquén RC","teamB":"Puerto San Gregorio","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"14:55","shootoutWinner":null,"day":"sab","matchNum":12},{"id":"m30fwynle5fnw","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Liga del Sudeste Cordobés","teamB":"Puerto San Gregorio","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"17:25","shootoutWinner":null,"day":"vie","matchNum":8},{"id":"me8g6vmwt5fnw","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Neuquén RC","teamB":"Carlos Paz RC A","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"16:35","shootoutWinner":null,"day":"vie","matchNum":6},{"id":"mumc9of5o09he","stage":"bracket","zoneId":null,"slotLabelA":"5° Zona A","slotLabelB":"5° Zona B","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"08:30","day":"dom","matchNum":21,"shootoutWinner":null,"key":"21","groupKey":"llave","roundLabel":"Definición 9°-10° (ida)","posWin":null,"posLose":null},{"id":"m81p7ith509he","stage":"bracket","zoneId":null,"slotLabelA":"3° Zona A","slotLabelB":"4° Zona B","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"08:55","day":"dom","matchNum":22,"shootoutWinner":null,"key":"22","groupKey":"llave","roundLabel":"Cruce","posWin":null,"posLose":null},{"id":"mpsedjb3d09he","stage":"bracket","zoneId":null,"slotLabelA":"3° Zona B","slotLabelB":"4° Zona A","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"09:20","day":"dom","matchNum":23,"shootoutWinner":null,"key":"23","groupKey":"llave","roundLabel":"Cruce","posWin":null,"posLose":null},{"id":"m82dw7i2z09he","stage":"bracket","zoneId":null,"slotLabelA":"1° Zona A","slotLabelB":"2° Zona B","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"09:45","day":"dom","matchNum":24,"shootoutWinner":null,"key":"24","groupKey":"llave","roundLabel":"Cruce","posWin":null,"posLose":null},{"id":"mdjghimlu09he","stage":"bracket","zoneId":null,"slotLabelA":"1° Zona B","slotLabelB":"2° Zona A","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"10:10","day":"dom","matchNum":25,"shootoutWinner":null,"key":"25","groupKey":"llave","roundLabel":"Cruce","posWin":null,"posLose":null},{"id":"mh5t1ajhg09he","stage":"bracket","zoneId":null,"slotLabelA":"5° Zona A","slotLabelB":"5° Zona B","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"10:35","day":"dom","matchNum":26,"shootoutWinner":null,"key":"26","groupKey":"llave","roundLabel":"Definición 9°-10° (vuelta)","posWin":9,"posLose":10},{"id":"mlong781r09he","stage":"bracket","zoneId":null,"slotLabelA":"Perdedor P.22","slotLabelB":"Perdedor P.23","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"11:00","day":"dom","matchNum":27,"shootoutWinner":null,"key":"27","groupKey":"llave","roundLabel":"Definición 7°-8°","posWin":7,"posLose":8},{"id":"mfhwmth3j09he","stage":"bracket","zoneId":null,"slotLabelA":"Ganador P.22","slotLabelB":"Ganador P.23","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"11:25","day":"dom","matchNum":28,"shootoutWinner":null,"key":"28","groupKey":"llave","roundLabel":"Definición 5°-6°","posWin":5,"posLose":6},{"id":"m2e0jwrcb09he","stage":"bracket","zoneId":null,"slotLabelA":"Perdedor P.24","slotLabelB":"Perdedor P.25","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"11:50","day":"dom","matchNum":29,"shootoutWinner":null,"key":"29","groupKey":"llave","roundLabel":"Definición 3°-4°","posWin":3,"posLose":4},{"id":"m1rcx3p6809he","stage":"bracket","zoneId":null,"slotLabelA":"Ganador P.24","slotLabelB":"Ganador P.25","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 1","time":"12:15","day":"dom","matchNum":30,"shootoutWinner":null,"key":"30","groupKey":"llave","roundLabel":"Definición 1°-2°","posWin":1,"posLose":2}]},{"id":"sub14","name":"Sub 14","format":"copas4zonas","pointsWin":3,"pointsDraw":1,"pointsLoss":0,"zones":[{"id":"A","name":"Zona A","teams":["Neuquén RC Azul","Carlos Paz RC B","Ribosqui Hockey Mendoza","CAI Ricardone","Liga del Sudeste Cordobés"]},{"id":"B","name":"Zona B","teams":["UVT Azul","C.D.S. Arroyito Blanco","Puerto San Gregorio","Castex La Pampa","E.M.F.I."]},{"id":"C","name":"Zona C","teams":["Neuquén RC Blanco","Carlos Paz RC A","San Javier Hockey","Huracán Carlos Tejedor","Banco Rugby Mendoza"]},{"id":"D","name":"Zona D","teams":["Neuquén RC C","UVT Granate","C.D.S. Arroyito Verde","Dep. Libertad San Fco","Central Norte Salta"]}],"matches":[{"id":"m8b7tektn09hf","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"CAI Ricardone","teamB":"Neuquén RC Azul","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"14:30","day":"vie","matchNum":1,"shootoutWinner":null},{"id":"m04zciwyq09hf","stage":"grupos","zoneId":"C","slotLabelA":null,"slotLabelB":null,"teamA":"Huracán Carlos Tejedor","teamB":"Neuquén RC Blanco","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"14:30","day":"vie","matchNum":2,"shootoutWinner":null},{"id":"m67wpb89l09hf","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Ribosqui Hockey Mendoza","teamB":"Carlos Paz RC B","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"14:55","day":"vie","matchNum":3,"shootoutWinner":null},{"id":"mdc6wed0v09hf","stage":"grupos","zoneId":"C","slotLabelA":null,"slotLabelB":null,"teamA":"San Javier Hockey","teamB":"Carlos Paz RC A","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"14:55","day":"vie","matchNum":4,"shootoutWinner":null},{"id":"m89x0qaqa09hf","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Castex La Pampa","teamB":"UVT Azul","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"15:20","day":"vie","matchNum":5,"shootoutWinner":null},{"id":"m04b1dgkf09hf","stage":"grupos","zoneId":"D","slotLabelA":null,"slotLabelB":null,"teamA":"Dep. Libertad San Fco","teamB":"Neuquén RC C","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"15:20","day":"vie","matchNum":6,"shootoutWinner":null},{"id":"m20qorolv09hf","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Puerto San Gregorio","teamB":"C.D.S. Arroyito Blanco","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"15:45","day":"vie","matchNum":7,"shootoutWinner":null},{"id":"m2cdlyly109hf","stage":"grupos","zoneId":"D","slotLabelA":null,"slotLabelB":null,"teamA":"C.D.S. Arroyito Verde","teamB":"UVT Granate","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"15:45","day":"vie","matchNum":8,"shootoutWinner":null},{"id":"mjp5cp3zg09hf","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"CAI Ricardone","teamB":"Liga del Sudeste Cordobés","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"16:10","day":"vie","matchNum":9,"shootoutWinner":null},{"id":"mxf8zig6d09hf","stage":"grupos","zoneId":"C","slotLabelA":null,"slotLabelB":null,"teamA":"Banco Rugby Mendoza","teamB":"Huracán Carlos Tejedor","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"16:10","day":"vie","matchNum":10,"shootoutWinner":null},{"id":"mu8wi814209hf","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"E.M.F.I.","teamB":"Castex La Pampa","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"16:35","day":"vie","matchNum":11,"shootoutWinner":null},{"id":"ms7ddsbu609hf","stage":"grupos","zoneId":"D","slotLabelA":null,"slotLabelB":null,"teamA":"Central Norte Salta","teamB":"Dep. Libertad San Fco","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"16:35","day":"vie","matchNum":12,"shootoutWinner":null},{"id":"mgcy15ufd09hf","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Carlos Paz RC B","teamB":"Neuquén RC Azul","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"17:00","day":"vie","matchNum":13,"shootoutWinner":null},{"id":"mft9dv4c509hf","stage":"grupos","zoneId":"C","slotLabelA":null,"slotLabelB":null,"teamA":"Carlos Paz RC A","teamB":"Neuquén RC Blanco","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"17:00","day":"vie","matchNum":14,"shootoutWinner":null},{"id":"m5430i7hr09hf","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Ribosqui Hockey Mendoza","teamB":"Liga del Sudeste Cordobés","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"17:25","day":"vie","matchNum":15,"shootoutWinner":null},{"id":"m0lippvtz09hf","stage":"grupos","zoneId":"C","slotLabelA":null,"slotLabelB":null,"teamA":"San Javier Hockey","teamB":"Banco Rugby Mendoza","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"17:25","day":"vie","matchNum":16,"shootoutWinner":null},{"id":"mvkis8igr09hf","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"C.D.S. Arroyito Blanco","teamB":"UVT Azul","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"17:50","day":"vie","matchNum":17,"shootoutWinner":null},{"id":"mrzwdwi8c09hf","stage":"grupos","zoneId":"D","slotLabelA":null,"slotLabelB":null,"teamA":"UVT Granate","teamB":"Neuquén RC C","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"17:50","day":"vie","matchNum":18,"shootoutWinner":null},{"id":"mkpnxp7k309hf","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Puerto San Gregorio","teamB":"E.M.F.I.","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"18:15","day":"vie","matchNum":19,"shootoutWinner":null},{"id":"m4os6em3c09hf","stage":"grupos","zoneId":"D","slotLabelA":null,"slotLabelB":null,"teamA":"C.D.S. Arroyito Verde","teamB":"Central Norte Salta","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"18:15","day":"vie","matchNum":20,"shootoutWinner":null},{"id":"msynfz0rm09hf","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Carlos Paz RC B","teamB":"CAI Ricardone","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"09:30","day":"sab","matchNum":21,"shootoutWinner":null},{"id":"m3axl1li209hf","stage":"grupos","zoneId":"C","slotLabelA":null,"slotLabelB":null,"teamA":"Carlos Paz RC A","teamB":"Huracán Carlos Tejedor","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"09:30","day":"sab","matchNum":22,"shootoutWinner":null},{"id":"mw4fpg0ls09hf","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Neuquén RC Azul","teamB":"Liga del Sudeste Cordobés","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"09:55","day":"sab","matchNum":23,"shootoutWinner":null},{"id":"mp73szq3d09hf","stage":"grupos","zoneId":"C","slotLabelA":null,"slotLabelB":null,"teamA":"Neuquén RC Blanco","teamB":"Banco Rugby Mendoza","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"09:55","day":"sab","matchNum":24,"shootoutWinner":null},{"id":"mdzrp0jl009hf","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"C.D.S. Arroyito Blanco","teamB":"Castex La Pampa","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"10:20","day":"sab","matchNum":25,"shootoutWinner":null},{"id":"mdgxkcnh309hf","stage":"grupos","zoneId":"D","slotLabelA":null,"slotLabelB":null,"teamA":"UVT Granate","teamB":"Dep. Libertad San Fco","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"10:20","day":"sab","matchNum":26,"shootoutWinner":null},{"id":"mdnbpuv2v09hf","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"UVT Azul","teamB":"E.M.F.I.","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"10:45","day":"sab","matchNum":27,"shootoutWinner":null},{"id":"matsm2a4c09hf","stage":"grupos","zoneId":"D","slotLabelA":null,"slotLabelB":null,"teamA":"Neuquén RC C","teamB":"Central Norte Salta","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"10:45","day":"sab","matchNum":28,"shootoutWinner":null},{"id":"mnk1mbi7z09hf","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Ribosqui Hockey Mendoza","teamB":"CAI Ricardone","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"11:10","day":"sab","matchNum":29,"shootoutWinner":null},{"id":"m973ybpvg09hf","stage":"grupos","zoneId":"C","slotLabelA":null,"slotLabelB":null,"teamA":"San Javier Hockey","teamB":"Huracán Carlos Tejedor","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"11:10","day":"sab","matchNum":30,"shootoutWinner":null},{"id":"m3djyh8b209hf","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"Puerto San Gregorio","teamB":"Castex La Pampa","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"11:35","day":"sab","matchNum":31,"shootoutWinner":null},{"id":"mxri32ehj09hf","stage":"grupos","zoneId":"D","slotLabelA":null,"slotLabelB":null,"teamA":"C.D.S. Arroyito Verde","teamB":"Dep. Libertad San Fco","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"11:35","day":"sab","matchNum":32,"shootoutWinner":null},{"id":"mrxacak3w09hf","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Neuquén RC Azul","teamB":"Ribosqui Hockey Mendoza","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"14:30","day":"sab","matchNum":33,"shootoutWinner":null},{"id":"mvwzovnoo09hf","stage":"grupos","zoneId":"C","slotLabelA":null,"slotLabelB":null,"teamA":"Banco Rugby Mendoza","teamB":"Carlos Paz RC A","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"14:30","day":"sab","matchNum":34,"shootoutWinner":null},{"id":"myszkozdf09hf","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"E.M.F.I.","teamB":"C.D.S. Arroyito Blanco","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"14:55","day":"sab","matchNum":35,"shootoutWinner":null},{"id":"m3ospq4x609hf","stage":"grupos","zoneId":"C","slotLabelA":null,"slotLabelB":null,"teamA":"Neuquén RC Blanco","teamB":"San Javier Hockey","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"14:55","day":"sab","matchNum":36,"shootoutWinner":null},{"id":"mqkyi2qx909hf","stage":"grupos","zoneId":"A","slotLabelA":null,"slotLabelB":null,"teamA":"Liga del Sudeste Cordobés","teamB":"Carlos Paz RC B","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"15:20","day":"sab","matchNum":37,"shootoutWinner":null},{"id":"mbscuvwlv09hf","stage":"grupos","zoneId":"D","slotLabelA":null,"slotLabelB":null,"teamA":"Central Norte Salta","teamB":"UVT Granate","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"15:20","day":"sab","matchNum":38,"shootoutWinner":null},{"id":"m6qgicxzz09hf","stage":"grupos","zoneId":"B","slotLabelA":null,"slotLabelB":null,"teamA":"UVT Azul","teamB":"Puerto San Gregorio","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"15:45","day":"sab","matchNum":39,"shootoutWinner":null},{"id":"mhw2ov4ov09hf","stage":"grupos","zoneId":"D","slotLabelA":null,"slotLabelB":null,"teamA":"Neuquén RC C","teamB":"C.D.S. Arroyito Verde","scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"15:45","day":"sab","matchNum":40,"shootoutWinner":null},{"id":"msno95bq209hf","stage":"bracket","zoneId":null,"slotLabelA":"5° Zona A","slotLabelB":"5° Zona C","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"17:00","day":"sab","matchNum":41,"shootoutWinner":null,"key":"41","groupKey":"estimulo","roundLabel":"Estímulo","posWin":null,"posLose":null},{"id":"m85k67rjk09hf","stage":"bracket","zoneId":null,"slotLabelA":"5° Zona B","slotLabelB":"5° Zona D","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"17:00","day":"sab","matchNum":42,"shootoutWinner":null,"key":"42","groupKey":"estimulo","roundLabel":"Estímulo","posWin":null,"posLose":null},{"id":"mko1hv1jn09hf","stage":"bracket","zoneId":null,"slotLabelA":"5° Zona A","slotLabelB":"5° Zona B","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"08:30","day":"dom","matchNum":51,"shootoutWinner":null,"key":"51","groupKey":"estimulo","roundLabel":"Estímulo","posWin":null,"posLose":null},{"id":"m32g1sgzq09hf","stage":"bracket","zoneId":null,"slotLabelA":"5° Zona C","slotLabelB":"5° Zona D","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"08:30","day":"dom","matchNum":52,"shootoutWinner":null,"key":"52","groupKey":"estimulo","roundLabel":"Estímulo","posWin":null,"posLose":null},{"id":"mfoodl3xs09hf","stage":"bracket","zoneId":null,"slotLabelA":"5° Zona A","slotLabelB":"5° Zona D","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"10:35","day":"dom","matchNum":61,"shootoutWinner":null,"key":"61","groupKey":"estimulo","roundLabel":"Estímulo","posWin":null,"posLose":null},{"id":"m221v4uz509hf","stage":"bracket","zoneId":null,"slotLabelA":"5° Zona B","slotLabelB":"5° Zona C","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"10:35","day":"dom","matchNum":62,"shootoutWinner":null,"key":"62","groupKey":"estimulo","roundLabel":"Estímulo","posWin":null,"posLose":null},{"id":"mhnt175p209hf","stage":"bracket","zoneId":null,"slotLabelA":"3° Zona A","slotLabelB":"4° Zona C","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"17:25","day":"sab","matchNum":43,"shootoutWinner":null,"key":"43","groupKey":"plata","roundLabel":"Cuartos","posWin":null,"posLose":null},{"id":"maf4rsbef09hf","stage":"bracket","zoneId":null,"slotLabelA":"3° Zona B","slotLabelB":"4° Zona D","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"17:25","day":"sab","matchNum":44,"shootoutWinner":null,"key":"44","groupKey":"plata","roundLabel":"Cuartos","posWin":null,"posLose":null},{"id":"mv8k6zgul09hf","stage":"bracket","zoneId":null,"slotLabelA":"3° Zona C","slotLabelB":"4° Zona A","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"17:50","day":"sab","matchNum":45,"shootoutWinner":null,"key":"45","groupKey":"plata","roundLabel":"Cuartos","posWin":null,"posLose":null},{"id":"mhg3bvr3n09hf","stage":"bracket","zoneId":null,"slotLabelA":"3° Zona D","slotLabelB":"4° Zona B","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"17:50","day":"sab","matchNum":46,"shootoutWinner":null,"key":"46","groupKey":"plata","roundLabel":"Cuartos","posWin":null,"posLose":null},{"id":"mjvbg8k9s09hf","stage":"bracket","zoneId":null,"slotLabelA":"Perdedor P.43","slotLabelB":"Perdedor P.45","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"08:55","day":"dom","matchNum":53,"shootoutWinner":null,"key":"53","groupKey":"plata","roundLabel":"Semifinal (13°-16°)","posWin":null,"posLose":null},{"id":"mq8ljlsv609hf","stage":"bracket","zoneId":null,"slotLabelA":"Perdedor P.44","slotLabelB":"Perdedor P.46","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"08:55","day":"dom","matchNum":54,"shootoutWinner":null,"key":"54","groupKey":"plata","roundLabel":"Semifinal (13°-16°)","posWin":null,"posLose":null},{"id":"m9jvmjpwz09hf","stage":"bracket","zoneId":null,"slotLabelA":"Ganador P.43","slotLabelB":"Ganador P.45","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"09:20","day":"dom","matchNum":55,"shootoutWinner":null,"key":"55","groupKey":"plata","roundLabel":"Semifinal","posWin":null,"posLose":null},{"id":"mkvtdfpu809hf","stage":"bracket","zoneId":null,"slotLabelA":"Ganador P.44","slotLabelB":"Ganador P.46","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"09:20","day":"dom","matchNum":56,"shootoutWinner":null,"key":"56","groupKey":"plata","roundLabel":"Semifinal","posWin":null,"posLose":null},{"id":"mhbkr92am09hf","stage":"bracket","zoneId":null,"slotLabelA":"Perdedor P.53","slotLabelB":"Perdedor P.54","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"11:00","day":"dom","matchNum":63,"shootoutWinner":null,"key":"63","groupKey":"plata","roundLabel":"7° puesto","posWin":15,"posLose":16},{"id":"m34gvtpqc09hf","stage":"bracket","zoneId":null,"slotLabelA":"Ganador P.53","slotLabelB":"Ganador P.54","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"11:00","day":"dom","matchNum":64,"shootoutWinner":null,"key":"64","groupKey":"plata","roundLabel":"5° puesto","posWin":13,"posLose":14},{"id":"m9ann0hxz09hf","stage":"bracket","zoneId":null,"slotLabelA":"Perdedor P.55","slotLabelB":"Perdedor P.56","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"11:25","day":"dom","matchNum":65,"shootoutWinner":null,"key":"65","groupKey":"plata","roundLabel":"3° puesto","posWin":11,"posLose":12},{"id":"mtfd90gd709hf","stage":"bracket","zoneId":null,"slotLabelA":"Ganador P.55","slotLabelB":"Ganador P.56","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"11:25","day":"dom","matchNum":66,"shootoutWinner":null,"key":"66","groupKey":"plata","roundLabel":"Final","posWin":9,"posLose":10},{"id":"m8s3q6xvh09hf","stage":"bracket","zoneId":null,"slotLabelA":"1° Zona A","slotLabelB":"2° Zona C","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"18:15","day":"sab","matchNum":47,"shootoutWinner":null,"key":"47","groupKey":"oro","roundLabel":"Cuartos","posWin":null,"posLose":null},{"id":"mkv2f5hy309hf","stage":"bracket","zoneId":null,"slotLabelA":"1° Zona B","slotLabelB":"2° Zona D","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"18:15","day":"sab","matchNum":48,"shootoutWinner":null,"key":"48","groupKey":"oro","roundLabel":"Cuartos","posWin":null,"posLose":null},{"id":"mh9gj61i309hf","stage":"bracket","zoneId":null,"slotLabelA":"1° Zona C","slotLabelB":"2° Zona A","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"18:40","day":"sab","matchNum":49,"shootoutWinner":null,"key":"49","groupKey":"oro","roundLabel":"Cuartos","posWin":null,"posLose":null},{"id":"m97vjne2u09hf","stage":"bracket","zoneId":null,"slotLabelA":"1° Zona D","slotLabelB":"2° Zona B","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"18:40","day":"sab","matchNum":50,"shootoutWinner":null,"key":"50","groupKey":"oro","roundLabel":"Cuartos","posWin":null,"posLose":null},{"id":"m6yulol9b09hf","stage":"bracket","zoneId":null,"slotLabelA":"Perdedor P.47","slotLabelB":"Perdedor P.49","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"09:45","day":"dom","matchNum":57,"shootoutWinner":null,"key":"57","groupKey":"oro","roundLabel":"Semifinal (5°-8°)","posWin":null,"posLose":null},{"id":"mdjy2uwbe09hf","stage":"bracket","zoneId":null,"slotLabelA":"Perdedor P.48","slotLabelB":"Perdedor P.50","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"09:45","day":"dom","matchNum":58,"shootoutWinner":null,"key":"58","groupKey":"oro","roundLabel":"Semifinal (5°-8°)","posWin":null,"posLose":null},{"id":"mdt4wbgn509hf","stage":"bracket","zoneId":null,"slotLabelA":"Ganador P.47","slotLabelB":"Ganador P.49","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"10:10","day":"dom","matchNum":59,"shootoutWinner":null,"key":"59","groupKey":"oro","roundLabel":"Semifinal","posWin":null,"posLose":null},{"id":"mq3ye3tpc09hf","stage":"bracket","zoneId":null,"slotLabelA":"Ganador P.48","slotLabelB":"Ganador P.50","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"10:10","day":"dom","matchNum":60,"shootoutWinner":null,"key":"60","groupKey":"oro","roundLabel":"Semifinal","posWin":null,"posLose":null},{"id":"mmsf2xabb09hf","stage":"bracket","zoneId":null,"slotLabelA":"Perdedor P.57","slotLabelB":"Perdedor P.58","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"11:50","day":"dom","matchNum":67,"shootoutWinner":null,"key":"67","groupKey":"oro","roundLabel":"7° puesto","posWin":7,"posLose":8},{"id":"m7crtv3cw09hf","stage":"bracket","zoneId":null,"slotLabelA":"Ganador P.57","slotLabelB":"Ganador P.58","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"11:50","day":"dom","matchNum":68,"shootoutWinner":null,"key":"68","groupKey":"oro","roundLabel":"5° puesto","posWin":5,"posLose":6},{"id":"m10x12rct09hf","stage":"bracket","zoneId":null,"slotLabelA":"Perdedor P.59","slotLabelB":"Perdedor P.60","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 2","time":"12:15","day":"dom","matchNum":69,"shootoutWinner":null,"key":"69","groupKey":"oro","roundLabel":"3° puesto","posWin":3,"posLose":4},{"id":"mi9p5be3a09hf","stage":"bracket","zoneId":null,"slotLabelA":"Ganador P.59","slotLabelB":"Ganador P.60","teamA":null,"teamB":null,"scoreA":null,"scoreB":null,"status":"pendiente","court":"Cancha 3","time":"12:15","day":"dom","matchNum":70,"shootoutWinner":null,"key":"70","groupKey":"oro","roundLabel":"Final","posWin":1,"posLose":2}]}]});
+</script>
+</body>
+</html>
+
+</body></html>
