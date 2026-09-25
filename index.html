@@ -64,12 +64,12 @@ h1,h2,h3{text-wrap:balance} button{font-family:inherit}
 .tag-group{ display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap; }
 .tag{ font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; border-radius:999px; padding:3px 9px; }
 .tag-zona{ background:var(--gris-100); color:var(--gris-700); }
-.tag-num{ background:var(--rojo-suave); color:var(--rojo-oscuro); }
+.tag-num{ background:#7A0014; color:#FFFFFF; } /* color fijo: no se invierte en modo oscuro, siempre legible */
 .estado{ display:inline-flex; align-items:center; gap:5px; font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:3px 8px; border-radius:999px; }
 .estado.pendiente{ background:var(--gris-100); color:var(--gris-700); }
 .estado.vivo{ background:var(--rojo); color:#fff; }
 .estado.vivo .live-dot{ background:#fff; }
-.estado.final{ background:var(--negro); color:#fff; }
+.estado.final{ background:#141212; color:#FFFFFF; } /* color fijo: --negro se invierte en modo oscuro y dejaba texto blanco sobre fondo casi blanco */
 
 .equipos{ display:flex; flex-direction:column; gap:6px; }
 .fila-equipo{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:3px 0; }
@@ -94,8 +94,8 @@ h1,h2,h3{text-wrap:balance} button{font-family:inherit}
 // Cada categoría tiene su propia implementación de Apps Script (script
 // distinto, atado a su propia planilla), por eso son dos URLs separadas
 // en vez de una sola URL + un id de planilla.
-const URL_SUB16 = 'https://script.google.com/macros/s/AKfycbwJnZzqDZGl5GOhud3ytokSCshcVG62cGeyL9nHQAI6T_XZm6c_aDiqigfZGFZK7vpp/exec';
-const URL_SUB14 = 'https://script.google.com/macros/s/AKfycbwW3vswebzmUvpu3qe00DHSAxVT1QcI0HJ-do-zwlrDSBZsFCu3df03W8vPVXlgze0avg/exec';
+const URL_SUB16 = 'https://script.google.com/macros/s/AKfycbwDw7Jf4tPyio5EIySCBajmro-cS1c3W_5D-qxYfAN8zV2Ru-wDZZtvb7rIP9HwjX_h/exec';
+const URL_SUB14 = 'https://script.google.com/macros/s/AKfycbzzP8aX2yq1mcK9OTwx4oNoCjnga-Li0it-NZEvze-9Vgas8SSRKW3Sgkd3lxMGjXIOaw/exec';
 
 // Intervalo de actualización con "jitter" (variación al azar): si los 1000+
 // celulares de la cancha pidieran datos exactamente cada 25s, se generaría
