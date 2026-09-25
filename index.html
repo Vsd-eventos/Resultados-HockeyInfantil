@@ -179,12 +179,16 @@ body.tv-mode table.standings{font-size:15px}
 <div id="app"></div>
 <script>
 // ==============================================================================
-// CONFIGURACIÓN DE LAS HOJAS DE CÁLCULO
-// Pega aquí las URLs de exportación CSV de tus dos planillas (Sub 16 y Sub 14)
+// CONFIGURACIÓN (APPS SCRIPT)
+// Reemplaza TU_URL_APPS_SCRIPT por la URL que te dio Apps Script al implementar
 // ==============================================================================
-const URL_HOJA_SUB16 = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTqhPB_zUJRlPIO2zIOmkZK80PBYUpMj0NA38CpvDDZJcBclU4nL8dktlsdmCwv3w/pub?gid=780094778&single=true&output=csv';
-const URL_HOJA_SUB14 = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYait_705AksG4UHjD7PZ-3NJu0ovmRFZJdKElplQBTcJqSXoIkzoHw4NaZd8CbQ/pub?gid=1107406439&single=true&output=csv';
-const INTERVALO_ACTUALIZACION = 45000; // Actualiza cada 45 segundos
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbyVr_9ZINh9YfMB_nPfbzVVbwgmZx4IBr-lFlDmMGecgcdF7ITRS5a9IFjxqOlFxJ-GCw/exec';
+
+// Pega aquí solo la mezcla de letras y números del ID de cada planilla
+const ID_PLANILLA_SUB16 = 'AKfycbxXZAUCAKEeR_ygVVJr9S6jZHToaZVTJ3rgCPb9Kb3e32SnFsaLzBQTI_awZq3agWAC';
+const ID_PLANILLA_SUB14 = 'AKfycbyVr_9ZINh9YfMB_nPfbzVVbwgmZx4IBr-lFlDmMGecgcdF7ITRS5a9IFjxqOlFxJ-GCw';
+
+const INTERVALO_ACTUALIZACION = 15000; // 15 segundos porque ahora es rápido
 
 function APP(STATE){
   "use strict";
@@ -192,7 +196,7 @@ function APP(STATE){
   var ui = { view:'torneo', modalidadCategoryId: STATE.activeCategoryId, tvIndex:0 };
   var tvTimer = null;
   var sheetWatchUnsub = null;
-  var sheetStatus = { state:'idle', message:'Sincronizando por primera vez...', lastSync:null };
+  var sheetStatus = { state:'idle', message:'Conectando a Google Sheets en tiempo real...', lastSync:null };
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function getCategory(id){ return STATE.categories.find(function(c){ return c.id===id; }); }
@@ -203,7 +207,7 @@ function APP(STATE){
   function dayIndex(code){ var i = DAY_ORDER.indexOf(code); return i===-1 ? 99 : i; }
 
   function fmtUpdated(iso){
-    try{ var d = new Date(iso); return d.toLocaleString('es-AR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}); }catch(e){ return ''; }
+    try{ var d = new Date(iso); return d.toLocaleString('es-AR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', second: '2-digit'}); }catch(e){ return ''; }
   }
 
   // --- Lógicas Matemáticas y Reglas de Desempate ---
@@ -419,35 +423,7 @@ function APP(STATE){
 
   function refreshCategory(cat){ syncPlayoffTeams(cat); }
 
-  // --- Integración con Google Sheets Público ---
-  function parseCsv(text){
-    var rows = [], field = '', row = [], inQuotes = false, i = 0, n = text.length;
-    while(i<n){
-      var c = text[i];
-      if(inQuotes){
-        if(c === '"'){
-          if(text[i+1] === '"'){ field += '"'; i += 2; continue; }
-          inQuotes = false; i++; continue;
-        }
-        field += c; i++; continue;
-      } else {
-        if(c === '"'){ inQuotes = true; i++; continue; }
-        if(c === ','){ row.push(field); field = ''; i++; continue; }
-        if(c === '\r'){ i++; continue; }
-        if(c === '\n'){ row.push(field); rows.push(row); field=''; row=[]; i++; continue; }
-        field += c; i++; continue;
-      }
-    }
-    if(field.length || row.length){ row.push(field); rows.push(row); }
-    if(!rows.length) return [];
-    var headers = rows[0].map(function(h){ return h.trim(); });
-    return rows.slice(1).filter(function(r){ return r.some(function(v){ return v && v.trim(); }); }).map(function(r){
-      var obj = {};
-      headers.forEach(function(h, idx){ obj[h] = r[idx]!=null ? r[idx] : ''; });
-      return obj;
-    });
-  }
-
+  // --- Integración con Google Apps Script ---
   function applySheetRows(rows){
     var changed = false;
     rows.forEach(function(r){
@@ -495,22 +471,22 @@ function APP(STATE){
 
   async function syncNow() {
     try {
+      // Llamamos a Apps Script pasándole el ID de la planilla
       const [res16, res14] = await Promise.all([
-        fetch(URL_HOJA_SUB16 + '&_=' + Date.now(), {cache: 'no-store'}),
-        fetch(URL_HOJA_SUB14 + '&_=' + Date.now(), {cache: 'no-store'})
+        fetch(URL_SCRIPT + '?id=' + ID_PLANILLA_SUB16),
+        fetch(URL_SCRIPT + '?id=' + ID_PLANILLA_SUB14)
       ]);
       
       if(!res16.ok || !res14.ok) throw new Error('Error al conectar con Google Sheets');
       
-      const txt16 = await res16.text();
-      const txt14 = await res14.text();
+      const rows16 = await res16.json();
+      const rows14 = await res14.json();
       
-      const rows16 = parseCsv(txt16);
+      if(rows16.error) throw new Error('Sub16: ' + rows16.error);
+      if(rows14.error) throw new Error('Sub14: ' + rows14.error);
+      
       // Inyectamos la categoría porque la planilla de origen no la tiene
       rows16.forEach(r => r['Categoria'] = 'Sub 16');
-      
-      const rows14 = parseCsv(txt14);
-      // Inyectamos la categoría porque la planilla de origen no la tiene
       rows14.forEach(r => r['Categoria'] = 'Sub 14');
       
       const allRows = rows16.concat(rows14);
@@ -521,11 +497,11 @@ function APP(STATE){
           STATE.categories.forEach(c => refreshCategory(c));
       }
       
-      sheetStatus = { state:'ok', message: 'Sincronizado', lastSync: new Date().toISOString() };
+      sheetStatus = { state:'ok', message: 'Sincronizado en tiempo real', lastSync: new Date().toISOString() };
       render();
     } catch(err) {
       console.error(err);
-      sheetStatus = { state:'error', message: 'Error de conexión con Sheets', lastSync: sheetStatus.lastSync };
+      sheetStatus = { state:'error', message: err.message || 'Error de conexión', lastSync: sheetStatus.lastSync };
       render();
     }
   }
@@ -693,7 +669,7 @@ function APP(STATE){
     var crossTitle = cat.format==='cruce2zonas' ? 'Cruce de posiciones' : 'Copas';
     
     return '<div class="wrap">' +
-      '<div class="readonly-banner"><span class="dot"></span> Los resultados se actualizan automáticamente desde las planillas oficiales de la organización.</div>' +
+      '<div class="readonly-banner"><span class="dot"></span> ' + esc(sheetStatus.message) + '</div>' +
       '<div class="section"><div class="section-head"><h2 class="section-title">Fixture</h2><span class="section-note">' + esc(groupNote) + '</span></div>' +
         renderFixtureSection(cat) + '</div>' +
       '<div class="section"><div class="section-head"><h2 class="section-title">Posiciones</h2><span class="section-note">Tabla de cada zona</span></div>' +
