@@ -173,6 +173,31 @@ function APP(STATE){
     if(!a || !b) return false;
     return stripAccents(String(a).toLowerCase().trim()) === stripAccents(String(b).toLowerCase().trim());
   }
+  // Compara nombres de zona de forma flexible: la planilla de Sub 14 usa
+  // "A"/"B"/"C"/"D" mientras que las zonas están definidas como "Zona A",
+  // "Zona B", etc. Con una comparación exacta (eq) ese partido nunca
+  // encontraba coincidencia de zona y quedaba descartado del todo: no se
+  // le cargaba resultado, hora, cancha ni N° de partido. Por eso en Sub 14
+  // no aparecían resultados ni el N° de partido, y en Sub 16 (donde la
+  // planilla sí dice "Zona A") no se notaba.
+  function zoneNameMatches(catZoneName, sheetZoneName){
+    if(!sheetZoneName) return true; // sin dato de zona en la planilla -> no filtrar
+    var a = stripAccents(String(catZoneName||'')).toLowerCase().replace(/zona\s*/g,'').trim();
+    var b = stripAccents(String(sheetZoneName||'')).toLowerCase().replace(/zona\s*/g,'').trim();
+    return a === b;
+  }
+  // Convierte "9:00" / "09:00" / "14:5" a minutos para poder ordenar
+  // numéricamente. Comparar los horarios como texto (localeCompare) hacía
+  // que "10:00" quedara antes que "9:00" (por orden alfabético), por eso
+  // las tarjetas de partidos no salían ordenadas.
+  function timeToMinutes(t){
+    if(!t) return null;
+    var m = String(t).trim().match(/^(\d{1,2}):?(\d{0,2})/);
+    if(!m) return null;
+    var h = parseInt(m[1],10) || 0;
+    var mi = parseInt(m[2],10) || 0;
+    return h*60 + mi;
+  }
 
   function uid(){ return 'm' + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
   function makeMatch(partial){
@@ -446,16 +471,23 @@ function APP(STATE){
 
         if (match && zoneName !== "" && x.zoneId) {
            var z = cat.zones.find(function(z) { return z.id === x.zoneId; });
-           if (z && !eq(z.name, zoneName)) return false;
+           if (z && !zoneNameMatches(z.name, zoneName)) return false;
         }
         return match;
       });
-      
+
       if(!matchingMatches.length) return;
       var m = matchingMatches[0];
-      
+
+      // OJO: nunca pisar m.key acá. Para los partidos de llave/copa
+      // (stage:'bracket'), "key" es el identificador interno que usa
+      // syncPlayoffTeams/resolveSource (Wn/Ls) para encontrar el partido.
+      // Sobreescribirlo con el N° de la planilla podía hacer que el sistema
+      // de cruces dejara de encontrar el partido y generara duplicados,
+      // perdiendo resultados ya cargados. El N° que se ve en pantalla se
+      // guarda aparte, en matchNum.
       var numInt = parseInt(num, 10);
-      if(!isNaN(numInt) && m.matchNum !== numInt) { m.matchNum = numInt; m.key = String(numInt); changed = true; }
+      if(!isNaN(numInt) && m.matchNum !== numInt) { m.matchNum = numInt; changed = true; }
       if(hora && m.time !== hora) { m.time = hora; changed = true; }
       if(cancha && m.court !== cancha) { m.court = cancha; changed = true; }
       
@@ -629,21 +661,33 @@ function APP(STATE){
     '</div>';
   }
 
+  // Ordena por hora (numérico, no alfabético: "9:00" antes que "10:00")
+  // y, a igual hora (o sin hora cargada), por N° de partido. Antes se
+  // comparaba la hora como texto (localeCompare), lo que dejaba "10:00"
+  // antes que "9:00" y desordenaba las tarjetas.
+  function sortMatchesForDisplay(list){
+    return list.slice().sort(function(x,y){
+      var tx = timeToMinutes(x.time), ty = timeToMinutes(y.time);
+      if(tx==null && ty!=null) return 1;
+      if(tx!=null && ty==null) return -1;
+      if(tx!=null && ty!=null && tx!==ty) return tx-ty;
+      var nx = parseInt(x.matchNum!=null ? x.matchNum : x.key, 10); if(isNaN(nx)) nx = 0;
+      var ny = parseInt(y.matchNum!=null ? y.matchNum : y.key, 10); if(isNaN(ny)) ny = 0;
+      return nx-ny;
+    });
+  }
+
   function renderFixtureSection(cat){
     var matches = cat.matches.filter(function(m){ return m.stage==='grupos'; });
     if(!matches.length) return '<p class="empty-note">No hay partidos cargados.</p>';
     var zoneName = {}; cat.zones.forEach(function(z){ zoneName[z.id] = z.name; });
-    
+
     var byDay = {};
     matches.forEach(function(m){ var d = m.day || ''; (byDay[d] = byDay[d] || []).push(m); });
     var days = Object.keys(byDay).sort(function(a,b){ return dayIndex(a) - dayIndex(b); });
-    
+
     return days.map(function(d){
-      var list = byDay[d].slice().sort(function(x,y){ 
-        var t = (x.time||'').localeCompare(y.time||''); 
-        if(t!==0) return t;
-        return (parseInt(x.matchNum)||0) - (parseInt(y.matchNum)||0);
-      });
+      var list = sortMatchesForDisplay(byDay[d]);
       return '<div class="day-block"><h3 class="day-title">' + esc(dayLabel(d)) + '</h3>' +
         '<div class="match-grid">' + list.map(function(m){ return renderMatchCard(m, zoneName[m.zoneId]); }).join('') + '</div></div>';
     }).join('');
@@ -676,11 +720,7 @@ function APP(STATE){
     var days = Object.keys(byDay).sort(function(a,b){ return dayIndex(a) - dayIndex(b); });
     
     var html = days.map(function(d){
-      var list = byDay[d].slice().sort(function(x,y){
-        var t = (x.time||'').localeCompare(y.time||'');
-        if(t!==0) return t;
-        return (parseInt(x.matchNum)||0) - (parseInt(y.matchNum)||0);
-      });
+      var list = sortMatchesForDisplay(byDay[d]);
       return '<div class="day-block"><h3 class="day-title">' + esc(dayLabel(d)) + '</h3>' +
         '<div class="match-grid">' + list.map(function(m){ return renderMatchCard(m, BRACKET_GROUP_DISPLAY_NAMES[m.groupKey] || ''); }).join('') + '</div></div>';
     }).join('');
