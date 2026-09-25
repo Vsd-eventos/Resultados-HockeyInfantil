@@ -180,10 +180,10 @@ body.tv-mode table.standings{font-size:15px}
 <script>
 // ==============================================================================
 // CONFIGURACIÓN DE LAS HOJAS DE CÁLCULO
-// Reemplaza TU_ID_DE_PLANILLA y el GID por los reales de tu Google Sheets público
+// Pega aquí las URLs de exportación CSV de tus dos planillas (Sub 16 y Sub 14)
 // ==============================================================================
-const URL_HOJA_SUB16 = 'https://docs.google.com/spreadsheets/d/1qosQZas3b7bpQXRlB21AMk4bATFm88-P5FTnws1gBQM/edit?usp=sharing';
-const URL_HOJA_SUB14 = 'https://docs.google.com/spreadsheets/d/1W22MF_O_DjRzpZWQo78OjjMJeS7hlpTqWaWFBVAoAqs/edit?usp=sharing';
+const URL_HOJA_SUB16 = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTqhPB_zUJRlPIO2zIOmkZK80PBYUpMj0NA38CpvDDZJcBclU4nL8dktlsdmCwv3w/pub?gid=780094778&single=true&output=csv';
+const URL_HOJA_SUB14 = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYait_705AksG4UHjD7PZ-3NJu0ovmRFZJdKElplQBTcJqSXoIkzoHw4NaZd8CbQ/pub?gid=1107406439&single=true&output=csv';
 const INTERVALO_ACTUALIZACION = 45000; // Actualiza cada 45 segundos
 
 function APP(STATE){
@@ -448,42 +448,41 @@ function APP(STATE){
     });
   }
 
-  function stripAccents(s){ try{ return s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }catch(e){ return s; } }
-  function normalizeStatus(estado, gaRaw, gbRaw){
-    var s = stripAccents((estado||'').trim().toLowerCase());
-    if(/final|termin|cerrad/.test(s)) return 'final';
-    if(/vivo|jugando|curso/.test(s)) return 'vivo';
-    if(/pendient|jugarse/.test(s)) return 'pendiente';
-    if(gaRaw!=='' && gbRaw!=='') return 'final';
-    if(gaRaw!=='' || gbRaw!=='') return 'vivo';
-    return 'pendiente';
-  }
-
   function applySheetRows(rows){
     var changed = false;
     rows.forEach(function(r){
-      var catName = (r['Categoria']||r['Categoría']||'').trim();
+      var catName = (r['Categoria']||'').trim();
       var zoneName = (r['Zona']||'').trim();
       var teamA = (r['EquipoA']||'').trim();
       var teamB = (r['EquipoB']||'').trim();
+      
       if(!catName || !teamA || !teamB) return;
+      
       var cat = STATE.categories.find(function(c){ return c.name.trim().toLowerCase()===catName.toLowerCase(); });
       if(!cat) return;
-      var zone = cat.zones.find(function(z){ return z.name.trim().toLowerCase()===zoneName.toLowerCase(); });
+      
       var m = cat.matches.find(function(x){
-        if(zone && x.zoneId!==zone.id) return false;
+        // Busca el partido cruzando los nombres de los equipos
         return (x.teamA===teamA && x.teamB===teamB) || (x.teamA===teamB && x.teamB===teamA);
       });
       if(!m) return;
+      
       var gaRaw = (r['GolesA']==null ? '' : String(r['GolesA']).trim());
       var gbRaw = (r['GolesB']==null ? '' : String(r['GolesB']).trim());
-      var status = normalizeStatus(r['Estado'], gaRaw, gbRaw);
+      
+      // ESTADO AUTOMÁTICO BASADO EN GOLES
+      var status = 'pendiente';
+      if(gaRaw !== '' && gbRaw !== '') {
+        status = 'final';
+      } else if(gaRaw !== '' || gbRaw !== '') {
+        status = 'vivo';
+      }
+      
       var gaNum = gaRaw==='' ? null : parseInt(gaRaw, 10);
       var gbNum = gbRaw==='' ? null : parseInt(gbRaw, 10);
       
       var newScoreA = m.teamA===teamA ? gaNum : gbNum;
       var newScoreB = m.teamA===teamA ? gbNum : gaNum;
-      if(newScoreA==null && newScoreB==null) status = 'pendiente';
       
       if(m.scoreA!==newScoreA || m.scoreB!==newScoreB || m.status!==status){
         m.scoreA = newScoreA; m.scoreB = newScoreB; m.status = status;
@@ -507,9 +506,11 @@ function APP(STATE){
       const txt14 = await res14.text();
       
       const rows16 = parseCsv(txt16);
+      // Inyectamos la categoría porque la planilla de origen no la tiene
       rows16.forEach(r => r['Categoria'] = 'Sub 16');
       
       const rows14 = parseCsv(txt14);
+      // Inyectamos la categoría porque la planilla de origen no la tiene
       rows14.forEach(r => r['Categoria'] = 'Sub 14');
       
       const allRows = rows16.concat(rows14);
