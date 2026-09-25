@@ -175,7 +175,7 @@ body.tv-mode table.standings{font-size:15px}
 // ==============================================================================
 const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxXZAUCAKEeR_ygVVJr9S6jZHToaZVTJ3rgCPb9Kb3e32SnFsaLzBQTI_awZq3agWAC/exec';
 
-// Pega aquí solo la mezcla de letras y números del ID de cada planilla de Google Sheets
+// PEGA AQUÍ LOS IDs DE TUS DOS PLANILLAS
 const ID_PLANILLA_SUB16 = '1qosQZas3b7bpQXRlB21AMk4bATFm88-P5FTnws1gBQM';
 const ID_PLANILLA_SUB14 = '1W22MF_O_DjRzpZWQo78OjjMJeS7hlpTqWaWFBVAoAqs';
 
@@ -189,7 +189,16 @@ function APP(STATE){
   var sheetWatchUnsub = null;
   var sheetStatus = { state:'idle', message:'Conectando a Google Sheets en tiempo real...', lastSync:null };
 
-  // --- Funciones Helpers para crear partidos vacíos ---
+  // --- Funciones Helpers para Limpiar Texto y Comparar ---
+  function stripAccents(s){
+    if(!s) return '';
+    try{ return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }catch(e){ return String(s); }
+  }
+  function eq(a, b) {
+    if(!a || !b) return false;
+    return stripAccents(String(a).toLowerCase().trim()) === stripAccents(String(b).toLowerCase().trim());
+  }
+
   function uid(){ return 'm' + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
   function makeMatch(partial){
     return Object.assign({
@@ -203,7 +212,7 @@ function APP(STATE){
   function getCategory(id){ return STATE.categories.find(function(c){ return c.id===id; }); }
 
   var DAY_ORDER = ['vie','sab','dom'];
-  var DAY_LABELS = { vie:'Viernes 25/9', sab:'Sábado 26/9', dom:'Domingo 27/9' };
+  var DAY_LABELS = { vie:'Viernes', sab:'Sábado', dom:'Domingo' };
   function dayLabel(code){ return DAY_LABELS[code] || 'Fecha a confirmar'; }
   function dayIndex(code){ var i = DAY_ORDER.indexOf(code); return i===-1 ? 99 : i; }
 
@@ -237,8 +246,8 @@ function APP(STATE){
       var diff = 0;
       matches.forEach(function(m){
         if(m.status!=='final' || m.scoreA==null || m.scoreB==null) return;
-        if(m.teamA===teamX && m.teamB===teamY) diff += (m.scoreA - m.scoreB);
-        else if(m.teamA===teamY && m.teamB===teamX) diff += (m.scoreB - m.scoreA);
+        if(eq(m.teamA, teamX) && eq(m.teamB, teamY)) diff += (m.scoreA - m.scoreB);
+        else if(eq(m.teamA, teamY) && eq(m.teamB, teamX)) diff += (m.scoreB - m.scoreA);
       });
       return diff;
     }
@@ -373,7 +382,7 @@ function APP(STATE){
     return null;
   }
 
-  // ESTA FUNCIÓN AUTO-CREA LOS PARTIDOS DE PLAYOFF SI FALTAN
+  // Crea y actualiza los partidos de llave (Cuartos, Semis, etc)
   function syncPlayoffTeams(cat){
     var specs = buildBracketSpecs(cat);
     if(!specs) return;
@@ -382,7 +391,6 @@ function APP(STATE){
       var teamB = resolveSource(cat, spec.B.src);
       var m = cat.matches.find(function(x){ return x.key===spec.key; });
       
-      // Si el partido de copa no existe, lo crea
       if(!m){
         cat.matches.push(makeMatch({
           stage:'bracket', key:spec.key, groupKey:spec.group, roundLabel:spec.round,
@@ -445,37 +453,44 @@ function APP(STATE){
       var teamA = (r['EquipoA']||'').trim();
       var teamB = (r['EquipoB']||'').trim();
       
-      // NUEVO: Leemos Día, Hora y N° para ordenar las tarjetas
-      var num = (r['N°']||r['Nro']||r['Numero']||'').trim();
+      // Leemos Día, Hora y N° para ordenar las tarjetas
+      var num = (r['N°']||r['Nro']||r['Nro.']||r['Numero']||r['Partido']||'').trim();
       var diaStr = (r['Día']||r['Dia']||'').trim().toLowerCase();
       var hora = (r['Hora']||'').trim();
       var cancha = (r['Cancha']||'').trim();
       
-      if(!catName || !teamA || !teamB) return;
+      if(!catName || (!teamA && !teamB)) return;
       
-      var cat = STATE.categories.find(function(c){ return c.name.trim().toLowerCase()===catName.toLowerCase(); });
+      var cat = STATE.categories.find(function(c){ return eq(c.name, catName); });
       if(!cat) return;
       
-      // Buscamos TODOS los partidos en los que se enfrenten estos dos equipos (pueden cruzarse en zona y en final)
+      // Buscamos el partido de manera "inteligente" (limpiando tildes, minúsculas, espacios)
       var matchingMatches = cat.matches.filter(function(x){
-        return (x.teamA===teamA && x.teamB===teamB) || (x.teamA===teamB && x.teamB===teamA);
+        var xA = x.teamA || '';
+        var xB = x.teamB || '';
+        var match = (eq(xA, teamA) && eq(xB, teamB)) || (eq(xA, teamB) && eq(xB, teamA));
+        
+        // Si no enganchó por nombre de equipo, capaz es un partido de playoff que aun dice "1° Zona A"
+        if (!match) {
+            var slotA = x.slotLabelA || '';
+            var slotB = x.slotLabelB || '';
+            match = (eq(slotA, teamA) && eq(slotB, teamB)) || (eq(slotA, teamB) && eq(slotB, teamA));
+        }
+
+        // Si mandaste la Zona en el excel, nos aseguramos de no actualizar una Final por error
+        if (match && zoneName !== "" && x.zoneId) {
+           var z = cat.zones.find(function(z) { return z.id === x.zoneId; });
+           if (z && !eq(z.name, zoneName)) return false;
+        }
+        return match;
       });
       
       if(!matchingMatches.length) return;
-      
-      var m = matchingMatches[0]; // Por defecto agarra el primero que encuentre
-      
-      // Si en el Excel especificaste una Zona, buscamos el partido exacto que corresponda a esa zona
-      if (zoneName !== "") {
-         var exactMatch = matchingMatches.find(function(x) {
-             var catZone = cat.zones.find(function(z) { return z.id === x.zoneId; });
-             return catZone && catZone.name.toLowerCase() === zoneName.toLowerCase();
-         });
-         if (exactMatch) m = exactMatch;
-      }
+      var m = matchingMatches[0];
       
       // --- ACTUALIZAR DATOS DE ORDENAMIENTO (Día, Hora, Número) ---
-      if(num && m.matchNum !== parseInt(num, 10)) { m.matchNum = parseInt(num, 10); m.key = num; changed = true; }
+      var numInt = parseInt(num, 10);
+      if(!isNaN(numInt) && m.matchNum !== numInt) { m.matchNum = numInt; m.key = String(numInt); changed = true; }
       if(hora && m.time !== hora) { m.time = hora; changed = true; }
       if(cancha && m.court !== cancha) { m.court = cancha; changed = true; }
       
@@ -484,8 +499,8 @@ function APP(STATE){
       if(diaStr.includes('vie')) mappedDay = 'vie';
       else if(diaStr.includes('sab') || diaStr.includes('sáb')) mappedDay = 'sab';
       else if(diaStr.includes('dom')) mappedDay = 'dom';
+      
       if(mappedDay && m.day !== mappedDay) { m.day = mappedDay; changed = true; }
-
       
       // --- ESTADO AUTOMÁTICO BASADO EN GOLES ---
       var gaRaw = (r['GolesA']==null ? '' : String(r['GolesA']).trim());
@@ -501,8 +516,9 @@ function APP(STATE){
       var gaNum = gaRaw==='' ? null : parseInt(gaRaw, 10);
       var gbNum = gbRaw==='' ? null : parseInt(gbRaw, 10);
       
-      var newScoreA = m.teamA===teamA ? gaNum : gbNum;
-      var newScoreB = m.teamA===teamA ? gbNum : gaNum;
+      // Acomodamos los goles según quién es A y quién B en la base de datos
+      var newScoreA = eq(m.teamA || m.slotLabelA, teamA) ? gaNum : gbNum;
+      var newScoreB = eq(m.teamA || m.slotLabelA, teamA) ? gbNum : gaNum;
       
       if(m.scoreA!==newScoreA || m.scoreB!==newScoreB || m.status!==status){
         m.scoreA = newScoreA; m.scoreB = newScoreB; m.status = status;
@@ -520,36 +536,45 @@ function APP(STATE){
          render(); return;
       }
 
-      // Agregamos un timestamp a la URL para forzar al navegador a que no use caché
-      const [res16, res14] = await Promise.all([
-        fetch(URL_SCRIPT + '?id=' + ID_PLANILLA_SUB16 + '&t=' + Date.now()),
-        fetch(URL_SCRIPT + '?id=' + ID_PLANILLA_SUB14 + '&t=' + Date.now())
-      ]);
+      // Hacemos las peticiones INDEPENDIENTES para que si una falla, la otra siga viva
+      const fetch16 = fetch(URL_SCRIPT + '?id=' + ID_PLANILLA_SUB16 + '&t=' + Date.now()).then(r => r.json()).catch(e => ({error: 'Fallo de red'}));
+      const fetch14 = fetch(URL_SCRIPT + '?id=' + ID_PLANILLA_SUB14 + '&t=' + Date.now()).then(r => r.json()).catch(e => ({error: 'Fallo de red'}));
       
-      if(!res16.ok || !res14.ok) throw new Error('Error al conectar con el servidor');
+      const [rows16, rows14] = await Promise.all([fetch16, fetch14]);
       
-      const rows16 = await res16.json();
-      const rows14 = await res14.json();
+      let allRows = [];
+      let hasErrors = false;
+      let errMsg = "";
+
+      if(rows16 && !rows16.error && Array.isArray(rows16)) {
+        rows16.forEach(r => r['Categoria'] = 'Sub 16');
+        allRows = allRows.concat(rows16);
+      } else {
+        hasErrors = true; errMsg += "Sub16 falló. ";
+      }
       
-      if(rows16.error) throw new Error('Sub16: ' + rows16.error);
-      if(rows14.error) throw new Error('Sub14: ' + rows14.error);
+      if(rows14 && !rows14.error && Array.isArray(rows14)) {
+        rows14.forEach(r => r['Categoria'] = 'Sub 14');
+        allRows = allRows.concat(rows14);
+      } else {
+        hasErrors = true; errMsg += "Sub14 falló. ";
+      }
       
-      // Inyectamos la categoría porque la planilla de origen no la tiene
-      rows16.forEach(r => r['Categoria'] = 'Sub 16');
-      rows14.forEach(r => r['Categoria'] = 'Sub 14');
+      applySheetRows(allRows);
       
-      const allRows = rows16.concat(rows14);
-      const changed = applySheetRows(allRows);
-      
-      // Siempre forzamos el refresco para que ordene bien las tarjetas aunque no cambien los goles
+      // Siempre forzamos el refresco para dibujar las Copas/Llaves aunque no cambien los goles
       STATE.updatedAt = new Date().toISOString();
       STATE.categories.forEach(c => refreshCategory(c));
       
-      sheetStatus = { state:'ok', message: 'Sincronizado en tiempo real', lastSync: new Date().toISOString() };
+      if (hasErrors) {
+        sheetStatus = { state:'error', message: 'Sync con errores: ' + errMsg, lastSync: new Date().toISOString() };
+      } else {
+        sheetStatus = { state:'ok', message: 'Sincronizado en tiempo real', lastSync: new Date().toISOString() };
+      }
       render();
     } catch(err) {
       console.error(err);
-      sheetStatus = { state:'error', message: err.message || 'Error de conexión', lastSync: sheetStatus.lastSync };
+      sheetStatus = { state:'error', message: 'Error general de conexión', lastSync: sheetStatus.lastSync };
       render();
     }
   }
@@ -616,11 +641,13 @@ function APP(STATE){
     var matches = cat.matches.filter(function(m){ return m.stage==='grupos'; });
     if(!matches.length) return '<p class="empty-note">No hay partidos cargados.</p>';
     var zoneName = {}; cat.zones.forEach(function(z){ zoneName[z.id] = z.name; });
+    
+    // AGRUPAMIENTO Y ORDEN CRONOLÓGICO RESTAURADO
     var byDay = {};
     matches.forEach(function(m){ var d = m.day || ''; (byDay[d] = byDay[d] || []).push(m); });
     var days = Object.keys(byDay).sort(function(a,b){ return dayIndex(a) - dayIndex(b); });
+    
     return days.map(function(d){
-      // NUEVO ORDENAMIENTO: Primero por hora, si es igual, por número de partido.
       var list = byDay[d].slice().sort(function(x,y){ 
         var t = (x.time||'').localeCompare(y.time||''); 
         if(t!==0) return t;
@@ -664,14 +691,17 @@ function APP(STATE){
   }
 
   var BRACKET_GROUP_DISPLAY_NAMES = {llave:'Cruce', oro:'Copa Oro', plata:'Copa Plata', estimulo:'Copa Estímulo'};
+  
   function renderBracketFixtureSection(cat){
     var matches = cat.matches.filter(function(m){ return m.stage==='bracket'; });
     if(!matches.length) return '<p class="empty-note">No hay partidos de cruces cargados.</p>';
+    
+    // AGRUPAMIENTO Y ORDEN CRONOLÓGICO PARA CRUCES/COPAS
     var byDay = {};
     matches.forEach(function(m){ var d = m.day || ''; (byDay[d] = byDay[d] || []).push(m); });
     var days = Object.keys(byDay).sort(function(a,b){ return dayIndex(a) - dayIndex(b); });
+    
     var html = days.map(function(d){
-      // ORDENAMIENTO CRONOLÓGICO PARA CRUCES
       var list = byDay[d].slice().sort(function(x,y){
         var t = (x.time||'').localeCompare(y.time||'');
         if(t!==0) return t;
@@ -733,7 +763,6 @@ function APP(STATE){
     '</div>';
   }
 
-  /* ---------------- "¿Cómo se juega?" explainer ---------------- */
   function renderModalidad(cat){
     var picker = STATE.categories.map(function(c){ return '<button class="mod-cat-btn" role="tab" aria-selected="' + (c.id===cat.id) + '" data-action="modalidad-select-category" data-id="' + c.id + '" type="button">' + esc(c.name) + '</button>'; }).join('');
     var body = cat.format==='cruce2zonas' ? renderModalidadCruce(cat) : (cat.format==='copas4zonas' ? renderModalidadCopas4(cat) : '');
@@ -774,11 +803,13 @@ function APP(STATE){
     }
   });
 
-  // BOOT
+  // BOOT: Armamos copas al inicio SIEMPRE, luego dibujamos, luego conectamos a Google Sheets.
+  STATE.categories.forEach(c => refreshCategory(c));
+  render();
   startSheetWatch();
 }
 
-// INICIALIZACIÓN CON ESTRUCTURA DEL TORNEO 2026
+// INICIALIZACIÓN DE LA ESTRUCTURA DEL TORNEO 2026
 APP({
   "tournamentName": "20° Encuentro Torneo Internacional de Hockey",
   "subtitle": "Carlos Paz Rugby Club · 25, 26 y 27 de septiembre",
