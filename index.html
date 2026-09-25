@@ -3,930 +3,332 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>VSD Hockey - Marcador en Vivo</title>
+<title>20° Encuentro Torneo Internacional de Hockey</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
-/* ===== Marcador en vivo — torneo de hockey ===== */
+/* ===== Marcador en vivo — Hockey — rojo / blanco / negro ===== */
 :root{
-  --bg:#F7F4F3; --surface:#FFFFFF; --surface-2:#F1E7E6; --border:#E3D2D0;
-  --ink:#241414; --ink-muted:#6B5958; --turf-700:#7A1418; --turf-600:#EA2427;
-  --turf-500:#FF5449; --gold:#D99A00; --gold-soft:#F6E7BF; --gold-ink:#5C4200;
-  --plata:#3E6FA8; --plata-soft:#DCE9F6; --plata-ink:#1F3A57; --coral:#D9502A;
-  --coral-soft:#F7DCD1; --win:#1F7A43; --win-soft:#DFF0E4; --draw:#8A7A22;
-  --draw-soft:#F1EBCF; --loss:#B23A3A; --loss-soft:#F6DEDE;
-  --shadow:0 1px 2px rgba(40,10,10,.07), 0 8px 24px -12px rgba(40,10,10,.2);
-  --radius:14px; --scale:1;
+  --rojo:#D2001F; --rojo-oscuro:#7A0014; --rojo-suave:#FBE1E5;
+  --negro:#141212; --gris-900:#1C1A1A; --gris-700:#4A4544;
+  --gris-400:#8C8482; --gris-200:#E4DEDD; --gris-100:#F2EEED;
+  --blanco:#FFFFFF; --bg:#F5F2F1;
+  --shadow:0 1px 2px rgba(20,18,18,.06), 0 6px 18px -10px rgba(20,18,18,.25);
+  --radius:14px;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#180E0D; --surface:#211615; --surface-2:#2A1A19; --border:#3C2A28;
-    --ink:#F2E9E8; --ink-muted:#B09B99; --turf-700:#2A0A0A; --turf-600:#FF5449;
-    --turf-500:#FF8478; --gold:#EFB93B; --gold-soft:#3A2E0E; --gold-ink:#F6E2A6;
-    --plata:#7FA8E0; --plata-soft:#1E2E40; --plata-ink:#D7E6F5; --coral:#FF7A52;
-    --coral-soft:#3A2016; --win:#3FAE71; --win-soft:#173425; --draw:#CBB84E;
-    --draw-soft:#332C10; --loss:#E56A6A; --loss-soft:#3A1D1D;
-    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+    --rojo:#FF3B54; --rojo-oscuro:#3A000A; --rojo-suave:#3A1218;
+    --negro:#F2EEED; --gris-900:#EDE8E7; --gris-700:#C9C1BF;
+    --gris-400:#8C8482; --gris-200:#3A3433; --gris-100:#241F1E;
+    --blanco:#1A1717; --bg:#121010;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px -10px rgba(0,0,0,.6);
   }
 }
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{ margin:0; background:var(--bg); color:var(--ink); font-family:"Source Sans 3", sans-serif; font-size:15px; line-height:1.45; }
-h1,h2,h3{text-wrap:balance} img{max-width:100%} button{font-family:inherit}
+body{ margin:0; background:var(--bg); color:var(--negro); font-family:"Source Sans 3", sans-serif; font-size:15px; line-height:1.45; }
+h1,h2,h3{text-wrap:balance} button{font-family:inherit}
 .mono{font-family:"IBM Plex Mono", monospace} .tabular{font-variant-numeric:tabular-nums}
-:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
-.wrap{max-width:1080px; margin:0 auto; padding:0 20px 96px}
-/* Scorebar */
-.scorebar{ background:linear-gradient(180deg, var(--turf-700), var(--turf-600)); color:#F3F7EF; border-bottom:3px solid var(--gold); position:sticky; top:0; z-index:30; }
-.scorebar-inner{ max-width:1080px; margin:0 auto; padding:16px 20px 14px; display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px 20px; }
-.brand-block{display:flex; align-items:center; gap:14px}
-.sponsor-logo{ height:50px; width:auto; border-radius:9px; display:block; border:2px solid rgba(255,255,255,.85); box-shadow:0 4px 12px -4px rgba(0,0,0,.5); }
-.brand-eyebrow{ font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin:0 0 4px; }
-.brand-title{ font-family:"Big Shoulders Display", sans-serif; font-weight:800; text-transform:uppercase; letter-spacing:.01em; font-size:clamp(26px, 4vw, 40px); line-height:.98; margin:0; }
-.brand-sub{margin:6px 0 0; font-size:13.5px; color:#F0D8D5; max-width:52ch}
-.scorebar-meta{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
-.updated-chip{ font-family:"IBM Plex Mono", monospace; font-size:11.5px; color:#F0D8D5; border:1px solid rgba(255,255,255,.22); border-radius:999px; padding:5px 10px; }
-.live-chip{ display:inline-flex; align-items:center; gap:7px; background:rgba(217,80,42,.18); border:1px solid var(--coral); color:#FFDFD2; font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; border-radius:999px; padding:5px 11px 5px 9px; }
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--coral); box-shadow:0 0 0 0 rgba(217,80,42,.6); animation:pulse 1.8s infinite}
-@keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(217,80,42,.55)} 70%{box-shadow:0 0 0 8px rgba(217,80,42,0)} 100%{box-shadow:0 0 0 0 rgba(217,80,42,0)} }
-.tv-btn{ border:1px solid rgba(255,255,255,.28); background:rgba(255,255,255,.06); color:#F3F7EF; border-radius:10px; padding:7px 12px; font-size:12.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
-.tv-btn:hover{background:rgba(255,255,255,.14)}
-.tabbar{max-width:1080px; margin:0 auto; padding:10px 20px 0; display:flex; gap:8px; flex-wrap:wrap}
-.tab{ border:1px solid rgba(255,255,255,.22); background:transparent; color:#F1DCDA; padding:8px 14px; border-radius:999px 999px 0 0; font-size:13.5px; font-weight:600; cursor:pointer; border-bottom:none; }
-.tab[aria-selected="true"]{background:var(--bg); color:var(--turf-600); border-color:var(--bg)}
-.tab-info{margin-left:auto; border-style:dashed; opacity:.9} .tab-info[aria-selected="true"]{opacity:1}
-/* Sections */
-.section{margin-top:28px}
-.section-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px}
-.section-title{ font-family:"Big Shoulders Display", sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.03em; font-size:19px; color:var(--turf-600); margin:0; }
-.section-note{font-size:12.5px; color:var(--ink-muted)}
-.zone-block{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px 16px 18px; margin-bottom:16px; }
-.zone-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px}
-.zone-name{ font-family:"Big Shoulders Display", sans-serif; font-size:17px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; color:var(--turf-600); margin:0; }
-.zone-tag{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-muted)}
-/* Match Cards */
-.day-block{margin-bottom:22px} .day-block:last-child{margin-bottom:0}
-.day-title{ font-family:"Big Shoulders Display", sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; font-size:15px; color:var(--ink-muted); margin:0 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
-.match-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); gap:10px}
-.match-card{ border:1px solid var(--border); border-radius:12px; background:var(--surface); padding:11px 12px 10px; position:relative; }
-.match-card.is-live{border-color:var(--coral)}
-.match-card-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px}
-.match-card-head .match-status{margin-bottom:0}
-.match-card-tags{display:inline-flex; align-items:center; gap:6px}
-.match-zone-tag{ font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-muted); background:var(--surface-2); border-radius:999px; padding:3px 8px; }
-.match-num-tag{ font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--turf-600); background:var(--coral-soft); border-radius:999px; padding:3px 8px; }
-.match-status{ display:inline-flex; align-items:center; gap:5px; font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; border-radius:999px; margin-bottom:8px; }
-.match-status.pendiente{background:var(--surface-2); color:var(--ink-muted)}
-.match-status.vivo{background:var(--coral-soft); color:var(--coral)}
-.match-status.vivo .live-dot{background:var(--coral)}
-.match-status.final{background:var(--win-soft); color:var(--win)}
-.match-teams{display:flex; flex-direction:column; gap:5px}
-.match-row{display:flex; align-items:center; justify-content:space-between; gap:10px}
-.match-team{font-size:14px; font-weight:600; color:var(--ink)}
-.match-row.win .match-team{color:var(--turf-600)}
-.match-score{ font-family:"Big Shoulders Display", sans-serif; font-weight:700; font-size:22px; min-width:1.4em; text-align:right; color:var(--ink); }
-.match-row.win .match-score{color:var(--turf-600)}
-.match-meta{ margin-top:8px; padding-top:7px; border-top:1px dashed var(--border); display:flex; justify-content:space-between; font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--ink-muted); }
-/* Standings Table */
-.standings-wrap{overflow-x:auto; margin-top:4px}
-table.standings{border-collapse:collapse; width:100%; min-width:480px; font-size:13px}
-table.standings th, table.standings td{padding:7px 8px; text-align:center; white-space:nowrap}
-table.standings th{ font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-muted); border-bottom:1px solid var(--border); font-weight:600; }
-table.standings td.team{text-align:left; font-weight:600}
-table.standings td.pts{font-weight:800; color:var(--turf-600)}
-table.standings tbody tr{border-bottom:1px solid var(--border)}
-table.standings tbody tr:last-child{border-bottom:none}
-table.standings tbody tr.qualifies td.team{position:relative; padding-left:14px}
-table.standings tbody tr.qualifies td.team::before{ content:""; position:absolute; left:0; top:3px; bottom:3px; width:3px; border-radius:2px; background:var(--gold); }
-.pos{font-family:"IBM Plex Mono",monospace; color:var(--ink-muted)}
-/* Bracket */
-.bracket{display:flex; gap:22px; align-items:center; overflow-x:auto; padding:6px 2px 10px}
-.bracket-col{display:flex; flex-direction:column; gap:16px; min-width:210px}
-.bracket-col.final-col{justify-content:center}
-.bracket-label{ font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:2px; }
-.bracket-slot{ border:1px solid var(--border); border-radius:10px; background:var(--surface); padding:9px 10px; box-shadow:var(--shadow); }
-.bracket-slot .match-row{padding:2px 0}
-.bracket-slot .match-team{font-size:13px}
-.bracket-slot .match-score{font-size:18px}
-.bracket-placeholder{ border:1px dashed var(--border); border-radius:10px; padding:12px 10px; text-align:center; font-size:12px; color:var(--ink-muted); font-style:italic; }
-.third-place{margin-top:14px} .third-place .bracket-slot{max-width:280px}
-.bracket-round{margin-bottom:18px} .bracket-round:last-child{margin-bottom:0}
-.bracket-round-title{ font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-muted); margin:0 0 8px; }
-.cup-block{margin-bottom:26px} .cup-block:last-child{margin-bottom:0}
-.cup-title{ font-family:"Big Shoulders Display", sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; font-size:18px; color:var(--turf-600); margin:0 0 12px; padding-bottom:6px; border-bottom:2px solid var(--border); }
-/* Misc */
-.readonly-banner{ max-width:1080px; margin:14px auto 0; padding:10px 20px; font-size:12.5px; color:var(--ink-muted); display:flex; align-items:center; gap:8px; }
-.readonly-banner .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-muted)}
-.empty-note{font-size:13px; color:var(--ink-muted); font-style:italic; padding:8px 2px}
-/* TV Mode */
-body.tv-mode{font-size:calc(15px * var(--scale))}
-body.tv-mode .tabbar{display:none}
-body.tv-mode .wrap{max-width:1400px}
-body.tv-mode .brand-title{font-size:clamp(34px, 5vw, 56px)}
-body.tv-mode .sponsor-logo{height:72px}
-@media (max-width:480px){ .sponsor-logo{height:38px} }
-body.tv-mode .section-title{font-size:24px}
-body.tv-mode .zone-name{font-size:21px}
-body.tv-mode .match-team{font-size:16px}
-body.tv-mode .match-score{font-size:27px}
-body.tv-mode table.standings{font-size:15px}
-/* ¿Cómo se juega? Cards */
-.mod-cat-picker{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px}
-.mod-cat-btn{ border:1px solid var(--border); background:var(--surface); color:var(--ink-muted); padding:8px 16px; border-radius:999px; font-size:13.5px; font-weight:700; cursor:pointer;}
-.mod-cat-btn[aria-selected="true"]{background:var(--turf-600); color:#fff; border-color:var(--turf-600)}
-.mod-card{ display:flex; gap:14px; align-items:flex-start; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px 18px; margin-bottom:14px;}
-.mod-step{ flex:none; width:30px; height:30px; border-radius:50%; background:var(--turf-600); color:#fff; display:flex; align-items:center; justify-content:center; font-family:"Big Shoulders Display", sans-serif; font-weight:800; font-size:15px;}
-.mod-copy{min-width:0}
-.mod-copy h4{ margin:0 0 6px; font-family:"Big Shoulders Display", sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.01em; font-size:16px; color:var(--turf-600);}
-.mod-copy p{margin:0 0 10px; font-size:13.5px; color:var(--ink); line-height:1.55}
+:focus-visible{outline:2px solid var(--rojo); outline-offset:2px}
+.wrap{max-width:1000px; margin:0 auto; padding:0 18px 72px}
+
+/* Header */
+.topbar{ background:linear-gradient(155deg, var(--negro) 0%, var(--rojo-oscuro) 130%); color:#fff; border-bottom:4px solid var(--rojo); }
+.topbar-inner{ max-width:1000px; margin:0 auto; padding:22px 18px 18px; }
+.eyebrow{ font-family:"IBM Plex Mono", monospace; font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:#FF8A96; margin:0 0 6px; }
+.titulo{ font-family:"Big Shoulders Display", sans-serif; font-weight:800; text-transform:uppercase; letter-spacing:.01em; font-size:clamp(24px, 5vw, 38px); line-height:1.02; margin:0; }
+.top-meta{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:12px; }
+.sync-chip{ font-family:"IBM Plex Mono", monospace; font-size:11.5px; color:#F1DADD; border:1px solid rgba(255,255,255,.25); border-radius:999px; padding:5px 11px; }
+.sync-chip.err{ color:#FFD9DC; border-color:#FF3B54; background:rgba(255,59,84,.15); }
+.live-chip{ display:inline-flex; align-items:center; gap:7px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; border-radius:999px; padding:5px 12px 5px 10px; }
+.live-dot{width:7px;height:7px;border-radius:50%;background:#fff; box-shadow:0 0 0 0 rgba(255,255,255,.7); animation:pulse 1.7s infinite}
+@keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(255,59,84,.6)} 70%{box-shadow:0 0 0 9px rgba(255,59,84,0)} 100%{box-shadow:0 0 0 0 rgba(255,59,84,0)} }
+
+/* Tabs */
+.tabbar{ max-width:1000px; margin:0 auto; padding:14px 18px 0; display:flex; gap:8px; }
+.tab{ flex:1; text-align:center; border:2px solid var(--negro); background:var(--blanco); color:var(--negro); padding:12px 10px; border-radius:12px; font-family:"Big Shoulders Display", sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.03em; font-size:17px; cursor:pointer; }
+.tab[aria-selected="true"]{ background:var(--rojo); border-color:var(--rojo); color:#fff; }
+
+/* Day sections */
+.section{margin-top:22px}
+.day-title{ font-family:"Big Shoulders Display", sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.03em; font-size:16px; color:var(--rojo); margin:0 0 10px; padding-bottom:6px; border-bottom:2px solid var(--gris-200); }
+.match-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:12px; margin-bottom:20px; }
+
+/* Match card */
+.match-card{ border:1px solid var(--gris-200); border-left:4px solid var(--gris-200); border-radius:var(--radius); background:var(--blanco); box-shadow:var(--shadow); padding:12px 14px 12px; }
+.match-card.is-vivo{ border-left-color:var(--rojo); }
+.match-card.is-final{ border-left-color:var(--negro); }
+.card-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:9px; flex-wrap:wrap; }
+.tag-group{ display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.tag{ font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; border-radius:999px; padding:3px 9px; }
+.tag-zona{ background:var(--gris-100); color:var(--gris-700); }
+.tag-num{ background:var(--rojo-suave); color:var(--rojo-oscuro); }
+.estado{ display:inline-flex; align-items:center; gap:5px; font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:3px 8px; border-radius:999px; }
+.estado.pendiente{ background:var(--gris-100); color:var(--gris-700); }
+.estado.vivo{ background:var(--rojo); color:#fff; }
+.estado.vivo .live-dot{ background:#fff; }
+.estado.final{ background:var(--negro); color:#fff; }
+
+.equipos{ display:flex; flex-direction:column; gap:6px; }
+.fila-equipo{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:3px 0; }
+.nombre-equipo{ font-size:14.5px; font-weight:600; color:var(--negro); }
+.fila-equipo.gana .nombre-equipo{ color:var(--rojo); font-weight:700; }
+.resultado{ font-family:"Big Shoulders Display", sans-serif; font-weight:800; font-size:23px; min-width:1.3em; text-align:right; color:var(--gris-700); }
+.fila-equipo.gana .resultado{ color:var(--rojo); }
+
+.card-meta{ margin-top:9px; padding-top:8px; border-top:1px dashed var(--gris-200); display:flex; justify-content:space-between; font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--gris-400); }
+
+.empty-note{ font-size:13.5px; color:var(--gris-400); font-style:italic; padding:10px 2px; }
+.readonly-banner{ max-width:1000px; margin:14px auto 0; padding:0 18px; font-size:12px; color:var(--gris-400); display:flex; align-items:center; gap:7px; }
+.readonly-banner .dot{width:6px;height:6px;border-radius:50%;background:var(--gris-400)}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
 // ==============================================================================
-// CONFIGURACIÓN (APPS SCRIPT)
+// CONFIGURACIÓN
 // ==============================================================================
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxXZAUCAKEeR_ygVVJr9S6jZHToaZVTJ3rgCPb9Kb3e32SnFsaLzBQTI_awZq3agWAC/exec';
+// Cada categoría tiene su propia implementación de Apps Script (script
+// distinto, atado a su propia planilla), por eso son dos URLs separadas
+// en vez de una sola URL + un id de planilla.
+const URL_SUB16 = 'https://script.google.com/macros/s/AKfycbwJnZzqDZGl5GOhud3ytokSCshcVG62cGeyL9nHQAI6T_XZm6c_aDiqigfZGFZK7vpp/exec';
+const URL_SUB14 = 'https://script.google.com/macros/s/AKfycbwW3vswebzmUvpu3qe00DHSAxVT1QcI0HJ-do-zwlrDSBZsFCu3df03W8vPVXlgze0avg/exec';
 
-// PEGA AQUÍ LOS IDs DE TUS DOS PLANILLAS
-const ID_PLANILLA_SUB16 = '1qosQZas3b7bpQXRlB21AMk4bATFm88-P5FTnws1gBQM';
-const ID_PLANILLA_SUB14 = '1W22MF_O_DjRzpZWQo78OjjMJeS7hlpTqWaWFBVAoAqs';
+// Intervalo de actualización con "jitter" (variación al azar): si los 1000+
+// celulares de la cancha pidieran datos exactamente cada 25s, se generaría
+// un pico de tráfico sincronizado cada 25s. Con el jitter, cada celular pide
+// en un momento levemente distinto y la carga se reparte en el tiempo.
+const INTERVALO_BASE_MS = 22000;
+const INTERVALO_JITTER_MS = 9000;
 
-const INTERVALO_ACTUALIZACION = 30000; 
+const TOURNAMENT_TITLE = '20° Encuentro Torneo Internacional de Hockey';
 
-function APP(STATE){
+function APP(){
   "use strict";
 
-  var ui = { view:'torneo', modalidadCategoryId: STATE.activeCategoryId, tvIndex:0 };
-  var tvTimer = null;
-  var sheetWatchUnsub = null;
-  var sheetStatus = { state:'idle', message:'Conectando a Google Sheets...', lastSync:null };
+  var state = {
+    activeTab: 'sub16',
+    matches: { sub16: [], sub14: [] },
+    sync: { state:'idle', message:'Conectando...', lastSync:null }
+  };
 
-  // --- Funciones Helpers para Limpiar Texto y Comparar ---
-  function stripAccents(s){
-    if(!s) return '';
-    try{ return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }catch(e){ return String(s); }
-  }
-  function eq(a, b) {
-    if(!a || !b) return false;
-    return stripAccents(String(a).toLowerCase().trim()) === stripAccents(String(b).toLowerCase().trim());
-  }
-  // Compara nombres de zona de forma flexible: la planilla de Sub 14 usa
-  // "A"/"B"/"C"/"D" mientras que las zonas están definidas como "Zona A",
-  // "Zona B", etc. Con una comparación exacta (eq) ese partido nunca
-  // encontraba coincidencia de zona y quedaba descartado del todo: no se
-  // le cargaba resultado, hora, cancha ni N° de partido. Por eso en Sub 14
-  // no aparecían resultados ni el N° de partido, y en Sub 16 (donde la
-  // planilla sí dice "Zona A") no se notaba.
-  function zoneNameMatches(catZoneName, sheetZoneName){
-    if(!sheetZoneName) return true; // sin dato de zona en la planilla -> no filtrar
-    var a = stripAccents(String(catZoneName||'')).toLowerCase().replace(/zona\s*/g,'').trim();
-    var b = stripAccents(String(sheetZoneName||'')).toLowerCase().replace(/zona\s*/g,'').trim();
-    return a === b;
-  }
-  // Convierte "9:00" / "09:00" / "14:5" a minutos para poder ordenar
-  // numéricamente. Comparar los horarios como texto (localeCompare) hacía
-  // que "10:00" quedara antes que "9:00" (por orden alfabético), por eso
-  // las tarjetas de partidos no salían ordenadas.
-  function timeToMinutes(t){
+  // --- Helpers de texto ---
+  function str(v){ return (v==null ? '' : String(v)).trim(); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  // Convierte "9:00" / "09:00" a minutos, para ordenar numéricamente
+  // (comparar como texto pondría "10:00" antes que "9:00").
+  function horaAMinutos(t){
     if(!t) return null;
     var m = String(t).trim().match(/^(\d{1,2}):?(\d{0,2})/);
     if(!m) return null;
-    var h = parseInt(m[1],10) || 0;
-    var mi = parseInt(m[2],10) || 0;
-    return h*60 + mi;
+    return (parseInt(m[1],10)||0)*60 + (parseInt(m[2],10)||0);
   }
 
-  function uid(){ return 'm' + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
-  function makeMatch(partial){
-    return Object.assign({
-      id: uid(), stage:'grupos', zoneId:null, slotLabelA:null, slotLabelB:null,
-      teamA:null, teamB:null, scoreA:null, scoreB:null, status:'pendiente',
-      court:'', time:'', day:null, matchNum:null, shootoutWinner:null, key:null
-    }, partial);
+  var DIA_ORDEN = ['vie','sab','dom'];
+  var DIA_LABEL = { vie:'Viernes', sab:'Sábado', dom:'Domingo' };
+  function diaCodigo(texto){
+    var t = String(texto||'').toLowerCase();
+    if(t.indexOf('vie')>-1) return 'vie';
+    if(t.indexOf('sab')>-1 || t.indexOf('sáb')>-1) return 'sab';
+    if(t.indexOf('dom')>-1) return 'dom';
+    return '';
+  }
+  function diaEtiqueta(codigo){ return DIA_LABEL[codigo] || 'Fecha a confirmar'; }
+  function diaIndice(codigo){ var i = DIA_ORDEN.indexOf(codigo); return i===-1 ? 99 : i; }
+
+  function fmtHora(iso){
+    try{ return new Date(iso).toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit', second:'2-digit'}); }catch(e){ return ''; }
   }
 
-  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  function getCategory(id){ return STATE.categories.find(function(c){ return c.id===id; }); }
+  // --- Transforma una fila cruda de la planilla en un partido para mostrar ---
+  function filaAPartido(r){
+    var teamA = str(r['EquipoA']);
+    var teamB = str(r['EquipoB']);
+    // Los cruces/copas ya están como filas al final de cada hoja, pero no
+    // tienen equipos cargados hasta que se definen por resultado de otros
+    // partidos. Mientras no estén los dos nombres, la tarjeta no se muestra.
+    if(!teamA || !teamB) return null;
 
-  var DAY_ORDER = ['vie','sab','dom'];
-  var DAY_LABELS = { vie:'Viernes', sab:'Sábado', dom:'Domingo' };
-  function dayLabel(code){ return DAY_LABELS[code] || 'Fecha a confirmar'; }
-  function dayIndex(code){ var i = DAY_ORDER.indexOf(code); return i===-1 ? 99 : i; }
+    var gaRaw = str(r['GolesA']);
+    var gbRaw = str(r['GolesB']);
+    var status = 'pendiente';
+    if(gaRaw !== '' && gbRaw !== '') status = 'final';
+    else if(gaRaw !== '' || gbRaw !== '') status = 'vivo';
 
-  function fmtUpdated(iso){
-    try{ var d = new Date(iso); return d.toLocaleString('es-AR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', second: '2-digit'}); }catch(e){ return ''; }
+    return {
+      zona: str(r['Zona']),
+      num: str(r['N°'] || r['Nro'] || r['Nro.'] || r['Numero'] || r['Partido']),
+      teamA: teamA, teamB: teamB,
+      scoreA: gaRaw === '' ? null : parseInt(gaRaw,10),
+      scoreB: gbRaw === '' ? null : parseInt(gbRaw,10),
+      status: status,
+      dia: diaCodigo(r['Día'] || r['Dia']),
+      hora: str(r['Hora']),
+      cancha: str(r['Cancha'])
+    };
   }
 
-  function groupMatches(cat, zoneId){ return cat.matches.filter(function(m){ return m.stage==='grupos' && m.zoneId===zoneId; }); }
-  function zoneComplete(cat, zoneId){
-    var gm = groupMatches(cat, zoneId);
-    return gm.length>0 && gm.every(function(m){ return m.status==='final'; });
-  }
-  
-  function computeStandingsGeneric(matches, teamNames, pointsWin, pointsDraw, pointsLoss){
-    var table = {};
-    teamNames.forEach(function(t){ table[t] = {team:t, pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,dg:0,pts:0}; });
-    matches.forEach(function(m){
-      if(m.status!=='final' || m.scoreA==null || m.scoreB==null) return;
-      var a = table[m.teamA], b = table[m.teamB];
-      if(!a || !b) return;
-      a.pj++; b.pj++;
-      a.gf += m.scoreA; a.gc += m.scoreB;
-      b.gf += m.scoreB; b.gc += m.scoreA;
-      if(m.scoreA > m.scoreB){ a.pg++; a.pts += pointsWin; b.pp++; b.pts += pointsLoss; }
-      else if(m.scoreB > m.scoreA){ b.pg++; b.pts += pointsWin; a.pp++; a.pts += pointsLoss; }
-      else { a.pe++; b.pe++; a.pts += pointsDraw; b.pts += pointsDraw; }
-    });
-    Object.keys(table).forEach(function(k){ table[k].dg = table[k].gf - table[k].gc; });
-    
-    function headToHead(teamX, teamY){
-      var diff = 0;
-      matches.forEach(function(m){
-        if(m.status!=='final' || m.scoreA==null || m.scoreB==null) return;
-        if(eq(m.teamA, teamX) && eq(m.teamB, teamY)) diff += (m.scoreA - m.scoreB);
-        else if(eq(m.teamA, teamY) && eq(m.teamB, teamX)) diff += (m.scoreB - m.scoreA);
-      });
-      return diff;
-    }
-    
-    return Object.values(table).sort(function(x,y){
-      if(y.pts!==x.pts) return y.pts-x.pts;
-      if(y.pg!==x.pg) return y.pg-x.pg;
-      if(y.dg!==x.dg) return y.dg-x.dg;
-      if(y.gf!==x.gf) return y.gf-x.gf;
-      var h2h = headToHead(x.team, y.team);
-      if(h2h!==0) return -h2h;
-      return x.team.localeCompare(y.team, 'es');
-    });
-  }
-  function computeStandings(cat, zone){ return computeStandingsGeneric(groupMatches(cat, zone.id), zone.teams, cat.pointsWin, cat.pointsDraw, cat.pointsLoss); }
-
-  function winnerOf(m){
-    if(m.status!=='final' || m.scoreA==null || m.scoreB==null) return null;
-    if(m.scoreA > m.scoreB) return 'A';
-    if(m.scoreB > m.scoreA) return 'B';
-    if(m.shootoutWinner) return m.shootoutWinner;
-    return null;
-  }
-  function computeTier(cat, tier){
-    if(!cat.zones.length) return null;
-    var allComplete = cat.zones.every(function(z){ return zoneComplete(cat, z.id); });
-    if(!allComplete) return null;
-    var rows = [];
-    cat.zones.forEach(function(z){
-      var st = computeStandings(cat, z);
-      var row = st[tier-1];
-      if(row) rows.push(row);
-    });
-    rows.sort(function(x,y){
-      if(y.pts!==x.pts) return y.pts-x.pts;
-      if(y.pg!==x.pg) return y.pg-x.pg;
-      if(y.dg!==x.dg) return y.dg-x.dg;
-      if(y.gf!==x.gf) return y.gf-x.gf;
-      return x.team.localeCompare(y.team, 'es');
-    });
-    return rows;
-  }
-  
-  function resolveSource(cat, src){
-    if(!src) return null;
-    if(src.k==='zonePos'){
-      var zone = cat.zones.find(function(z){ return z.id===src.zoneId; });
-      if(!zone || !zoneComplete(cat, zone.id)) return null;
-      var st = computeStandings(cat, zone);
-      var row = st[src.pos-1];
-      return row ? row.team : null;
-    }
-    if(src.k==='tier'){
-      var pool = computeTier(cat, src.tier);
-      if(!pool) return null;
-      var row = pool[src.rank-1];
-      return row ? row.team : null;
-    }
-    if(src.k==='win' || src.k==='lose'){
-      var m = cat.matches.find(function(x){ return x.key===src.ref; });
-      if(!m) return null;
-      var w = winnerOf(m);
-      if(!w) return null;
-      if(src.k==='win') return w==='A' ? m.teamA : m.teamB;
-      return w==='A' ? m.teamB : m.teamA;
-    }
-    return null;
-  }
-
-  function Zp(zoneId, pos, label){ return {src:{k:'zonePos', zoneId:zoneId, pos:pos}, label:label}; }
-  function Wn(key){ return {src:{k:'win', ref:key}, label:'Ganador P.' + key}; }
-  function Ls(key){ return {src:{k:'lose', ref:key}, label:'Perdedor P.' + key}; }
-
-  function buildBracketSpecs(cat){
-    if(cat.format==='cruce2zonas'){
-      var zA = cat.zones[0], zB = cat.zones[1];
-      if(!zA || !zB) return null;
-      return [
-        {key:'21', group:'llave', round:'Definición 9°-10° (ida)', A:Zp(zA.id,5,'5° '+zA.name), B:Zp(zB.id,5,'5° '+zB.name)},
-        {key:'22', group:'llave', round:'Cruce', A:Zp(zA.id,3,'3° '+zA.name), B:Zp(zB.id,4,'4° '+zB.name)},
-        {key:'23', group:'llave', round:'Cruce', A:Zp(zB.id,3,'3° '+zB.name), B:Zp(zA.id,4,'4° '+zA.name)},
-        {key:'24', group:'llave', round:'Cruce', A:Zp(zA.id,1,'1° '+zA.name), B:Zp(zB.id,2,'2° '+zB.name)},
-        {key:'25', group:'llave', round:'Cruce', A:Zp(zB.id,1,'1° '+zB.name), B:Zp(zA.id,2,'2° '+zA.name)},
-        {key:'26', group:'llave', round:'Definición 9°-10° (vuelta)', A:Zp(zA.id,5,'5° '+zA.name), B:Zp(zB.id,5,'5° '+zB.name), posWin:9, posLose:10},
-        {key:'27', group:'llave', round:'Definición 7°-8°', A:Ls('22'), B:Ls('23'), posWin:7, posLose:8},
-        {key:'28', group:'llave', round:'Definición 5°-6°', A:Wn('22'), B:Wn('23'), posWin:5, posLose:6},
-        {key:'29', group:'llave', round:'Definición 3°-4°', A:Ls('24'), B:Ls('25'), posWin:3, posLose:4},
-        {key:'30', group:'llave', round:'Definición 1°-2°', A:Wn('24'), B:Wn('25'), posWin:1, posLose:2}
-      ];
-    }
-    if(cat.format==='copas4zonas'){
-      var zA = cat.zones[0], zB = cat.zones[1], zC = cat.zones[2], zD = cat.zones[3];
-      if(!zA || !zB || !zC || !zD) return null;
-      var nA = zA.name, nB = zB.name, nC = zC.name, nD = zD.name;
-      return [
-        {key:'47', group:'oro', round:'Cuartos', A:Zp(zA.id,1,'1° '+nA), B:Zp(zC.id,2,'2° '+nC)},
-        {key:'48', group:'oro', round:'Cuartos', A:Zp(zB.id,1,'1° '+nB), B:Zp(zD.id,2,'2° '+nD)},
-        {key:'49', group:'oro', round:'Cuartos', A:Zp(zC.id,1,'1° '+nC), B:Zp(zA.id,2,'2° '+nA)},
-        {key:'50', group:'oro', round:'Cuartos', A:Zp(zD.id,1,'1° '+nD), B:Zp(zB.id,2,'2° '+nB)},
-        {key:'57', group:'oro', round:'Semifinal (5°-8°)', A:Ls('47'), B:Ls('49')},
-        {key:'58', group:'oro', round:'Semifinal (5°-8°)', A:Ls('48'), B:Ls('50')},
-        {key:'59', group:'oro', round:'Semifinal', A:Wn('47'), B:Wn('49')},
-        {key:'60', group:'oro', round:'Semifinal', A:Wn('48'), B:Wn('50')},
-        {key:'70', group:'oro', round:'Final', A:Wn('59'), B:Wn('60'), posWin:1, posLose:2},
-        {key:'69', group:'oro', round:'3° puesto', A:Ls('59'), B:Ls('60'), posWin:3, posLose:4},
-        {key:'68', group:'oro', round:'5° puesto', A:Wn('57'), B:Wn('58'), posWin:5, posLose:6},
-        {key:'67', group:'oro', round:'7° puesto', A:Ls('57'), B:Ls('58'), posWin:7, posLose:8},
-        {key:'43', group:'plata', round:'Cuartos', A:Zp(zA.id,3,'3° '+nA), B:Zp(zC.id,4,'4° '+nC)},
-        {key:'44', group:'plata', round:'Cuartos', A:Zp(zB.id,3,'3° '+nB), B:Zp(zD.id,4,'4° '+nD)},
-        {key:'45', group:'plata', round:'Cuartos', A:Zp(zC.id,3,'3° '+nC), B:Zp(zA.id,4,'4° '+nA)},
-        {key:'46', group:'plata', round:'Cuartos', A:Zp(zD.id,3,'3° '+nD), B:Zp(zB.id,4,'4° '+nB)},
-        {key:'53', group:'plata', round:'Semifinal (13°-16°)', A:Ls('43'), B:Ls('45')},
-        {key:'54', group:'plata', round:'Semifinal (13°-16°)', A:Ls('44'), B:Ls('46')},
-        {key:'55', group:'plata', round:'Semifinal', A:Wn('43'), B:Wn('45')},
-        {key:'56', group:'plata', round:'Semifinal', A:Wn('44'), B:Wn('46')},
-        {key:'66', group:'plata', round:'Final', A:Wn('55'), B:Wn('56'), posWin:9, posLose:10},
-        {key:'65', group:'plata', round:'3° puesto', A:Ls('55'), B:Ls('56'), posWin:11, posLose:12},
-        {key:'64', group:'plata', round:'5° puesto', A:Wn('53'), B:Wn('54'), posWin:13, posLose:14},
-        {key:'63', group:'plata', round:'7° puesto', A:Ls('53'), B:Ls('54'), posWin:15, posLose:16},
-        {key:'41', group:'estimulo', round:'Estímulo', A:Zp(zA.id,5,'5° '+nA), B:Zp(zC.id,5,'5° '+nC)},
-        {key:'42', group:'estimulo', round:'Estímulo', A:Zp(zB.id,5,'5° '+nB), B:Zp(zD.id,5,'5° '+nD)},
-        {key:'51', group:'estimulo', round:'Estímulo', A:Zp(zA.id,5,'5° '+nA), B:Zp(zB.id,5,'5° '+nB)},
-        {key:'52', group:'estimulo', round:'Estímulo', A:Zp(zC.id,5,'5° '+nC), B:Zp(zD.id,5,'5° '+nD)},
-        {key:'61', group:'estimulo', round:'Estímulo', A:Zp(zA.id,5,'5° '+nA), B:Zp(zD.id,5,'5° '+nD)},
-        {key:'62', group:'estimulo', round:'Estímulo', A:Zp(zB.id,5,'5° '+nB), B:Zp(zC.id,5,'5° '+nC)}
-      ];
-    }
-    return null;
-  }
-
-  function syncPlayoffTeams(cat){
-    var specs = buildBracketSpecs(cat);
-    if(!specs) return;
-    specs.forEach(function(spec){
-      var teamA = resolveSource(cat, spec.A.src);
-      var teamB = resolveSource(cat, spec.B.src);
-      var m = cat.matches.find(function(x){ return x.key===spec.key; });
-      
-      if(!m){
-        cat.matches.push(makeMatch({
-          stage:'bracket', key:spec.key, groupKey:spec.group, roundLabel:spec.round,
-          posWin: spec.posWin || null, posLose: spec.posLose || null,
-          slotLabelA: spec.A.label, slotLabelB: spec.B.label,
-          teamA: teamA, teamB: teamB
-        }));
-        return;
-      }
-      
-      m.slotLabelA = spec.A.label; m.slotLabelB = spec.B.label;
-      m.groupKey = spec.group; m.roundLabel = spec.round;
-      m.posWin = spec.posWin || null; m.posLose = spec.posLose || null;
-      var changed = (teamA!==m.teamA) || (teamB!==m.teamB);
-      if(changed && m.status!=='pendiente'){
-        m.status = 'pendiente'; m.scoreA = null; m.scoreB = null; m.shootoutWinner = null;
-      }
-      m.teamA = teamA; m.teamB = teamB;
-    });
-  }
-
-  function computeEstimuloStandings(cat){
-    if(cat.format==='copas4zonas'){
-      if(!cat.zones.every(function(z){ return zoneComplete(cat, z.id); })) return null;
-      var teams = cat.zones.map(function(z){ var st = computeStandings(cat, z); return st[4] ? st[4].team : null; });
-      if(teams.some(function(t){ return !t; })) return null;
-      var matches = cat.matches.filter(function(m){ return m.groupKey==='estimulo'; });
-      return computeStandingsGeneric(matches, teams, cat.pointsWin, cat.pointsDraw, cat.pointsLoss);
-    }
-    return null;
-  }
-
-  function computeFinalStandings(cat){
-    var specs = buildBracketSpecs(cat);
-    if(!specs) return null;
-    var result = [];
-    specs.forEach(function(spec){
-      if(spec.posWin==null) return;
-      var m = cat.matches.find(function(x){ return x.key===spec.key; });
-      var w = m ? winnerOf(m) : null;
-      result.push({pos:spec.posWin, team: w ? (w==='A'?m.teamA:m.teamB) : null});
-      result.push({pos:spec.posLose, team: w ? (w==='A'?m.teamB:m.teamA) : null});
-    });
-    if(cat.format==='copas4zonas'){
-      var est = computeEstimuloStandings(cat);
-      for(var p=17;p<=20;p++){ result.push({pos:p, team: est ? (est[p-17] && est[p-17].team) : null}); }
-    }
-    result.sort(function(a,b){ return a.pos-b.pos; });
-    return result;
-  }
-
-  function refreshCategory(cat){ syncPlayoffTeams(cat); }
-
-  // --- Integración con Google Apps Script ---
-  function applySheetRows(rows){
-    var changed = false;
-    rows.forEach(function(r){
-      var catName = (r['Categoria']||'').trim();
-      var zoneName = (r['Zona']||'').trim();
-      var teamA = (r['EquipoA']||'').trim();
-      var teamB = (r['EquipoB']||'').trim();
-      
-      var num = (r['N°']||r['Nro']||r['Nro.']||r['Numero']||r['Partido']||'').trim();
-      var diaStr = (r['Día']||r['Dia']||'').trim().toLowerCase();
-      var hora = (r['Hora']||'').trim();
-      var cancha = (r['Cancha']||'').trim();
-      
-      if(!catName || (!teamA && !teamB)) return;
-      
-      var cat = STATE.categories.find(function(c){ return eq(c.name, catName); });
-      if(!cat) return;
-      
-      var matchingMatches = cat.matches.filter(function(x){
-        var xA = x.teamA || '';
-        var xB = x.teamB || '';
-        var match = (eq(xA, teamA) && eq(xB, teamB)) || (eq(xA, teamB) && eq(xB, teamA));
-        
-        if (!match) {
-            var slotA = x.slotLabelA || '';
-            var slotB = x.slotLabelB || '';
-            match = (eq(slotA, teamA) && eq(slotB, teamB)) || (eq(slotA, teamB) && eq(slotB, teamA));
-        }
-
-        if (match && zoneName !== "" && x.zoneId) {
-           var z = cat.zones.find(function(z) { return z.id === x.zoneId; });
-           if (z && !zoneNameMatches(z.name, zoneName)) return false;
-        }
-        return match;
-      });
-
-      if(!matchingMatches.length) return;
-      var m = matchingMatches[0];
-
-      // OJO: nunca pisar m.key acá. Para los partidos de llave/copa
-      // (stage:'bracket'), "key" es el identificador interno que usa
-      // syncPlayoffTeams/resolveSource (Wn/Ls) para encontrar el partido.
-      // Sobreescribirlo con el N° de la planilla podía hacer que el sistema
-      // de cruces dejara de encontrar el partido y generara duplicados,
-      // perdiendo resultados ya cargados. El N° que se ve en pantalla se
-      // guarda aparte, en matchNum.
-      var numInt = parseInt(num, 10);
-      if(!isNaN(numInt) && m.matchNum !== numInt) { m.matchNum = numInt; changed = true; }
-      if(hora && m.time !== hora) { m.time = hora; changed = true; }
-      if(cancha && m.court !== cancha) { m.court = cancha; changed = true; }
-      
-      var mappedDay = m.day;
-      if(diaStr.includes('vie')) mappedDay = 'vie';
-      else if(diaStr.includes('sab') || diaStr.includes('sáb')) mappedDay = 'sab';
-      else if(diaStr.includes('dom')) mappedDay = 'dom';
-      
-      if(mappedDay && m.day !== mappedDay) { m.day = mappedDay; changed = true; }
-      
-      var gaRaw = (r['GolesA']==null ? '' : String(r['GolesA']).trim());
-      var gbRaw = (r['GolesB']==null ? '' : String(r['GolesB']).trim());
-      
-      var status = 'pendiente';
-      if(gaRaw !== '' && gbRaw !== '') {
-        status = 'final';
-      } else if(gaRaw !== '' || gbRaw !== '') {
-        status = 'vivo';
-      }
-      
-      var gaNum = gaRaw==='' ? null : parseInt(gaRaw, 10);
-      var gbNum = gbRaw==='' ? null : parseInt(gbRaw, 10);
-      
-      var newScoreA = eq(m.teamA || m.slotLabelA, teamA) ? gaNum : gbNum;
-      var newScoreB = eq(m.teamA || m.slotLabelA, teamA) ? gbNum : gaNum;
-      
-      if(m.scoreA!==newScoreA || m.scoreB!==newScoreB || m.status!==status){
-        m.scoreA = newScoreA; m.scoreB = newScoreB; m.status = status;
-        if(status!=='final') m.shootoutWinner = null;
-        changed = true;
-      }
-    });
-    return changed;
-  }
-
-  // OPTIMIZACIÓN VITAL PARA GOOGLE APPS SCRIPT
-  async function fetchJSONSafely(id) {
-    try {
-      // CUIDADO: NO agregar opciones extra al fetch (como headers o cache: 'no-store').
-      // Eso obliga al navegador a hacer una petición CORS preflight (OPTIONS) y 
-      // Google Apps Script no las soporta, bloqueando la conexión.
-      // Usar simplemente ?t=Date.now() es suficiente para saltar el caché de forma segura.
-      const targetUrl = URL_SCRIPT + '?id=' + id + '&t=' + Date.now();
-      const response = await fetch(targetUrl, { 
-        method: 'GET',
-        redirect: 'follow'
-      });
-      
-      if (!response.ok) return { error: `HTTP ${response.status}` };
-      const text = await response.text();
-      
-      try {
-        return JSON.parse(text);
-      } catch (e) {
-        // Si el Script de Google tiene permisos incorrectos, devolverá una página HTML en vez de JSON
-        return { error: 'El script web no devolvió JSON válido. (Probable error interno del Script)' };
-      }
-    } catch(err) {
-      return { error: 'Bloqueo CORS / Fallo de red' };
+  // --- Fetch a Apps Script sin headers extra: así el pedido es "simple" y
+  // el navegador no dispara un preflight CORS, que Apps Script no soporta. ---
+  async function fetchPlanilla(urlBase){
+    try{
+      var url = urlBase + (urlBase.indexOf('?')>-1 ? '&' : '?') + 't=' + Date.now();
+      var resp = await fetch(url, { method:'GET', redirect:'follow' });
+      if(!resp.ok) return { error: 'HTTP ' + resp.status };
+      var texto = await resp.text();
+      try{ return JSON.parse(texto); }
+      catch(e){ return { error:'El script no devolvió JSON válido.' }; }
+    }catch(err){
+      return { error:'Bloqueo de red / CORS' };
     }
   }
 
-  async function syncNow() {
-    try {
-      if(!ID_PLANILLA_SUB16 || !ID_PLANILLA_SUB14) {
-         sheetStatus = { state:'error', message: 'Falta configurar los IDs', lastSync: sheetStatus.lastSync };
-         renderPartial(); return;
-      }
+  async function sincronizar(){
+    var r16 = await fetchPlanilla(URL_SUB16);
+    var r14 = await fetchPlanilla(URL_SUB14);
 
-      const rows16 = await fetchJSONSafely(ID_PLANILLA_SUB16);
-      const rows14 = await fetchJSONSafely(ID_PLANILLA_SUB14);
-      
-      let allRows = [];
-      let hasErrors = false;
-      let errMsg = "";
+    var errores = [];
+    var nuevosSub16 = state.matches.sub16, nuevosSub14 = state.matches.sub14;
 
-      if(rows16 && !rows16.error && Array.isArray(rows16)) {
-        rows16.forEach(r => r['Categoria'] = 'Sub 16');
-        allRows = allRows.concat(rows16);
-      } else {
-        hasErrors = true; errMsg += "Error Sub16: " + (rows16.error || 'falló') + ". ";
-      }
-      
-      if(rows14 && !rows14.error && Array.isArray(rows14)) {
-        rows14.forEach(r => r['Categoria'] = 'Sub 14');
-        allRows = allRows.concat(rows14);
-      } else {
-        hasErrors = true; errMsg += "Error Sub14: " + (rows14.error || 'falló') + ". ";
-      }
-      
-      let isDataChanged = applySheetRows(allRows);
-      let priorDataState = JSON.stringify(STATE.categories);
-      
-      STATE.updatedAt = new Date().toISOString();
-      STATE.categories.forEach(c => refreshCategory(c));
-
-      let hasBracketChanges = priorDataState !== JSON.stringify(STATE.categories);
-      
-      if (hasErrors) {
-        sheetStatus = { state:'error', message: errMsg, lastSync: sheetStatus.lastSync || STATE.updatedAt };
-        renderPartial(); 
-      } else {
-        sheetStatus = { state:'ok', message: 'Sincronizado en tiempo real', lastSync: STATE.updatedAt };
-        if (isDataChanged || hasBracketChanges) {
-           render();
-        } else {
-           renderPartial(); 
-        }
-      }
-    } catch(err) {
-      sheetStatus = { state:'error', message: 'Error de red general', lastSync: sheetStatus.lastSync };
-      renderPartial();
+    if(Array.isArray(r16)){
+      nuevosSub16 = r16.map(filaAPartido).filter(Boolean);
+    } else {
+      errores.push('Sub 16: ' + (r16 && r16.error ? r16.error : 'sin datos'));
     }
+    if(Array.isArray(r14)){
+      nuevosSub14 = r14.map(filaAPartido).filter(Boolean);
+    } else {
+      errores.push('Sub 14: ' + (r14 && r14.error ? r14.error : 'sin datos'));
+    }
+
+    // Solo volvemos a pintar la pantalla si algo realmente cambió: con
+    // cientos de celulares mirando la página, evitar redibujados
+    // innecesarios cada 20s ahorra batería y va más fluido.
+    var cambio = JSON.stringify(nuevosSub16) !== JSON.stringify(state.matches.sub16) ||
+                 JSON.stringify(nuevosSub14) !== JSON.stringify(state.matches.sub14);
+
+    state.matches.sub16 = nuevosSub16;
+    state.matches.sub14 = nuevosSub14;
+
+    if(errores.length){
+      state.sync = { state:'error', message:'Error al sincronizar — ' + errores.join(' · '), lastSync: state.sync.lastSync };
+    } else {
+      state.sync = { state:'ok', message:'Sincronizado', lastSync: new Date().toISOString() };
+    }
+
+    if(cambio || errores.length) render(); else renderEncabezado();
+    programarProximaSync();
   }
 
-  function startSheetWatch(){
-    if(sheetWatchUnsub) return;
-    setTimeout(syncNow, 1000); 
-    sheetWatchUnsub = setInterval(syncNow, INTERVALO_ACTUALIZACION);
+  function programarProximaSync(){
+    var espera = INTERVALO_BASE_MS + Math.random()*INTERVALO_JITTER_MS;
+    setTimeout(sincronizar, espera);
   }
 
-  // --- Vistas UI ---
-  function statusLabel(st){ return st==='pendiente' ? 'A jugarse' : (st==='vivo' ? 'En vivo' : 'Final'); }
-
-  function renderMatchCard(m, zoneTag){
-    var refNum = m.matchNum != null ? m.matchNum : m.key;
-    var winner = winnerOf(m);
-    var rowAClass = 'match-row' + (winner==='A' ? ' win' : '');
-    var rowBClass = 'match-row' + (winner==='B' ? ' win' : '');
+  // --- Render ---
+  function renderTarjeta(m){
+    var refNum = m.num ? '<span class="tag tag-num">Partido ' + esc(m.num) + '</span>' : '';
+    var refZona = m.zona ? '<span class="tag tag-zona">' + esc(m.zona) + '</span>' : '';
+    var estadoTxt = m.status==='pendiente' ? 'A jugarse' : (m.status==='vivo' ? '<span class="live-dot"></span> En vivo' : 'Final');
+    var ganaA = m.status==='final' && m.scoreA!=null && m.scoreB!=null && m.scoreA > m.scoreB;
+    var ganaB = m.status==='final' && m.scoreA!=null && m.scoreB!=null && m.scoreB > m.scoreA;
     var scoreA = m.scoreA==null ? '–' : m.scoreA;
     var scoreB = m.scoreB==null ? '–' : m.scoreB;
-    var statusHtml = m.status==='vivo' ? '<span class="live-dot"></span> En vivo' : statusLabel(m.status);
+
     return '' +
-      '<div class="match-card' + (m.status==='vivo' ? ' is-live' : '') + '">' +
-        '<div class="match-card-head">' +
-          '<div class="match-status ' + m.status + '">' + statusHtml + '</div>' +
-          '<span class="match-card-tags">' +
-            (refNum ? '<span class="match-num-tag">Partido ' + esc(refNum) + '</span>' : '') +
-            (zoneTag ? '<span class="match-zone-tag">' + esc(zoneTag) + '</span>' : '') +
-          '</span>' +
+      '<div class="match-card is-' + m.status + '">' +
+        '<div class="card-head">' +
+          '<span class="tag-group">' + refZona + refNum + '</span>' +
+          '<span class="estado ' + m.status + '">' + estadoTxt + '</span>' +
         '</div>' +
-        '<div class="match-teams">' +
-          '<div class="' + rowAClass + '"><span class="match-team">' + esc(m.teamA || m.slotLabelA || 'A definir') + '</span><span class="match-score tabular">' + scoreA + '</span></div>' +
-          '<div class="' + rowBClass + '"><span class="match-team">' + esc(m.teamB || m.slotLabelB || 'A definir') + '</span><span class="match-score tabular">' + scoreB + '</span></div>' +
+        '<div class="equipos">' +
+          '<div class="fila-equipo' + (ganaA?' gana':'') + '"><span class="nombre-equipo">' + esc(m.teamA) + '</span><span class="resultado tabular">' + scoreA + '</span></div>' +
+          '<div class="fila-equipo' + (ganaB?' gana':'') + '"><span class="nombre-equipo">' + esc(m.teamB) + '</span><span class="resultado tabular">' + scoreB + '</span></div>' +
         '</div>' +
-        (m.court || m.time ? '<div class="match-meta"><span>' + esc(m.court||'') + '</span><span>' + esc(m.time||'') + '</span></div>' : '') +
+        (m.cancha || m.hora ? '<div class="card-meta"><span>' + esc(m.cancha||'') + '</span><span>' + esc(m.hora||'') + '</span></div>' : '') +
       '</div>';
   }
 
-  function renderStandings(cat, zone){
-    var st = computeStandings(cat, zone);
-    var rows = st.map(function(row, i){
-      return '<tr class="' + (i<2 ? 'qualifies' : '') + '">' +
-        '<td class="pos">' + (i+1) + '</td><td class="team">' + esc(row.team) + '</td>' +
-        '<td class="tabular">' + row.pj + '</td><td class="tabular">' + row.pg + '</td>' +
-        '<td class="tabular">' + row.pe + '</td><td class="tabular">' + row.pp + '</td>' +
-        '<td class="tabular">' + row.gf + '</td><td class="tabular">' + row.gc + '</td>' +
-        '<td class="tabular">' + (row.dg>0?'+':'') + row.dg + '</td><td class="tabular pts">' + row.pts + '</td>' +
-      '</tr>';
-    }).join('');
-    return '<div class="standings-wrap"><table class="standings">' +
-      '<thead><tr><th>#</th><th style="text-align:left">Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>' +
-      '<tbody>' + rows + '</tbody></table></div>';
-  }
-
-  function renderStandingsBlock(cat, zone){
-    var complete = zoneComplete(cat, zone.id);
-    return '<div class="zone-block">' +
-      '<div class="zone-head"><h3 class="zone-name">' + esc(zone.name) + '</h3><span class="zone-tag">' + (complete ? 'Fase cerrada' : 'Fase en curso') + '</span></div>' +
-      (zone.teams.length ? renderStandings(cat, zone) : '<p class="empty-note">Sin equipos aún.</p>') +
-    '</div>';
-  }
-
-  // Ordena por hora (numérico, no alfabético: "9:00" antes que "10:00")
-  // y, a igual hora (o sin hora cargada), por N° de partido. Antes se
-  // comparaba la hora como texto (localeCompare), lo que dejaba "10:00"
-  // antes que "9:00" y desordenaba las tarjetas.
-  function sortMatchesForDisplay(list){
-    return list.slice().sort(function(x,y){
-      var tx = timeToMinutes(x.time), ty = timeToMinutes(y.time);
-      if(tx==null && ty!=null) return 1;
-      if(tx!=null && ty==null) return -1;
-      if(tx!=null && ty!=null && tx!==ty) return tx-ty;
-      var nx = parseInt(x.matchNum!=null ? x.matchNum : x.key, 10); if(isNaN(nx)) nx = 0;
-      var ny = parseInt(y.matchNum!=null ? y.matchNum : y.key, 10); if(isNaN(ny)) ny = 0;
+  function ordenarPartidos(lista){
+    return lista.slice().sort(function(x,y){
+      var hx = horaAMinutos(x.hora), hy = horaAMinutos(y.hora);
+      if(hx==null && hy!=null) return 1;
+      if(hx!=null && hy==null) return -1;
+      if(hx!=null && hy!=null && hx!==hy) return hx-hy;
+      var nx = parseInt(x.num,10); if(isNaN(nx)) nx = 0;
+      var ny = parseInt(y.num,10); if(isNaN(ny)) ny = 0;
       return nx-ny;
     });
   }
 
-  function renderFixtureSection(cat){
-    var matches = cat.matches.filter(function(m){ return m.stage==='grupos'; });
-    if(!matches.length) return '<p class="empty-note">No hay partidos cargados.</p>';
-    var zoneName = {}; cat.zones.forEach(function(z){ zoneName[z.id] = z.name; });
-
-    var byDay = {};
-    matches.forEach(function(m){ var d = m.day || ''; (byDay[d] = byDay[d] || []).push(m); });
-    var days = Object.keys(byDay).sort(function(a,b){ return dayIndex(a) - dayIndex(b); });
-
-    return days.map(function(d){
-      var list = sortMatchesForDisplay(byDay[d]);
-      return '<div class="day-block"><h3 class="day-title">' + esc(dayLabel(d)) + '</h3>' +
-        '<div class="match-grid">' + list.map(function(m){ return renderMatchCard(m, zoneName[m.zoneId]); }).join('') + '</div></div>';
+  function renderFixture(lista){
+    if(!lista.length) return '<p class="empty-note">Todavía no hay partidos cargados con equipos definidos.</p>';
+    var porDia = {};
+    lista.forEach(function(m){ (porDia[m.dia] = porDia[m.dia] || []).push(m); });
+    var dias = Object.keys(porDia).sort(function(a,b){ return diaIndice(a)-diaIndice(b); });
+    return dias.map(function(d){
+      var ordenados = ordenarPartidos(porDia[d]);
+      return '<div class="section"><h3 class="day-title">' + esc(diaEtiqueta(d)) + '</h3>' +
+        '<div class="match-grid">' + ordenados.map(renderTarjeta).join('') + '</div></div>';
     }).join('');
   }
 
-  function renderStandingsGenericTable(rows, startPos){
-    var body = rows.map(function(row, i){
-      return '<tr><td class="pos">' + (startPos+i) + '°</td><td class="team">' + esc(row.team) + '</td>' +
-        '<td class="tabular">' + row.pj + '</td><td class="tabular">' + row.pg + '</td><td class="tabular">' + row.pe + '</td><td class="tabular">' + row.pp + '</td>' +
-        '<td class="tabular">' + row.gf + '</td><td class="tabular">' + row.gc + '</td><td class="tabular">' + (row.dg>0?'+':'') + row.dg + '</td><td class="tabular pts">' + row.pts + '</td></tr>';
-    }).join('');
-    return '<div class="standings-wrap"><table class="standings"><thead><tr><th>#</th><th style="text-align:left">Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead><tbody>' + body + '</tbody></table></div>';
+  function contarEnVivo(){
+    return state.matches.sub16.filter(function(m){return m.status==='vivo';}).length +
+           state.matches.sub14.filter(function(m){return m.status==='vivo';}).length;
   }
 
-  function renderFinalStandingsTable(cat){
-    var rows = computeFinalStandings(cat);
-    if(!rows || !rows.some(function(r){ return r.team; })) return '';
-    var body = rows.map(function(r){ return '<tr><td class="pos">' + r.pos + '°</td><td class="team">' + esc(r.team||'A definir') + '</td></tr>'; }).join('');
-    return '<div class="zone-block"><div class="zone-head"><h3 class="zone-name">Posiciones finales</h3></div><div class="standings-wrap"><table class="standings"><thead><tr><th>#</th><th style="text-align:left">Equipo</th></tr></thead><tbody>' + body + '</tbody></table></div></div>';
-  }
-
-  var BRACKET_GROUP_DISPLAY_NAMES = {llave:'Cruce', oro:'Copa Oro', plata:'Copa Plata', estimulo:'Copa Estímulo'};
-  
-  function renderBracketFixtureSection(cat){
-    var matches = cat.matches.filter(function(m){ return m.stage==='bracket'; });
-    if(!matches.length) return '<p class="empty-note">No hay partidos de cruces cargados.</p>';
-    
-    var byDay = {};
-    matches.forEach(function(m){ var d = m.day || ''; (byDay[d] = byDay[d] || []).push(m); });
-    var days = Object.keys(byDay).sort(function(a,b){ return dayIndex(a) - dayIndex(b); });
-    
-    var html = days.map(function(d){
-      var list = sortMatchesForDisplay(byDay[d]);
-      return '<div class="day-block"><h3 class="day-title">' + esc(dayLabel(d)) + '</h3>' +
-        '<div class="match-grid">' + list.map(function(m){ return renderMatchCard(m, BRACKET_GROUP_DISPLAY_NAMES[m.groupKey] || ''); }).join('') + '</div></div>';
-    }).join('');
-    
-    if(cat.format==='copas4zonas'){
-      var est = computeEstimuloStandings(cat);
-      html += '<div class="zone-block"><div class="zone-head"><h3 class="zone-name">Copa Estímulo</h3><span class="zone-tag">Posiciones 17° a 20°</span></div>' +
-        (est ? renderStandingsGenericTable(est, 17) : '<p class="empty-note">La tabla se arma cuando terminan las zonas.</p>') + '</div>';
-    }
-    html += renderFinalStandingsTable(cat);
-    return html;
-  }
-
-  function renderScorebar(){
-    var liveCount = 0;
-    STATE.categories.forEach(function(c){ c.matches.forEach(function(m){ if(m.status==='vivo') liveCount++; }); });
-    var isErr = sheetStatus.state === 'error';
-    var syncColor = isErr ? 'color: var(--coral); border-color: var(--coral)' : '';
-    return '<div class="scorebar-inner">' +
-      '<div class="brand-block">' +
-        (STATE.sponsorLogo ? '<img class="sponsor-logo" src="' + STATE.sponsorLogo + '" alt="Organiza">' : '') +
-        '<div><p class="brand-eyebrow">Marcador en vivo</p><h1 class="brand-title">' + esc(STATE.tournamentName) + '</h1>' +
-        (STATE.subtitle ? '<p class="brand-sub">' + esc(STATE.subtitle) + '</p>' : '') + '</div>' +
-      '</div>' +
-      '<div class="scorebar-meta">' +
-        (liveCount>0 ? '<span class="live-chip"><span class="live-dot"></span>' + liveCount + ' en vivo</span>' : '') +
-        '<span class="updated-chip" style="' + syncColor + '" title="' + esc(sheetStatus.message) + '">Última sync: ' + (sheetStatus.lastSync ? fmtUpdated(sheetStatus.lastSync) : 'Conectando...') + (isErr?' (Reintentando)':'') + '</span>' +
-        '<button class="tv-btn" data-action="toggle-tv" type="button">' + (document.body.classList.contains('tv-mode') ? 'Salir de modo pantalla' : 'Modo pantalla') + '</button>' +
-      '</div></div>' +
-      '<div class="tabbar">' + STATE.categories.map(function(c){
-        return '<button class="tab" role="tab" aria-selected="' + (c.id===STATE.activeCategoryId && ui.view==='torneo') + '" data-action="switch-category" data-id="' + c.id + '" type="button">' + esc(c.name) + '</button>';
-      }).join('') +
-      '<button class="tab tab-info" role="tab" aria-selected="' + (ui.view==='modalidad') + '" data-action="show-modalidad" type="button">¿Cómo se juega?</button>' +
-    '</div>';
-  }
-
-  function renderMain(){
-    if(ui.view==='modalidad'){
-      var mcat = getCategory(ui.modalidadCategoryId) || getCategory(STATE.activeCategoryId);
-      return mcat ? '<div class="wrap">' + renderModalidad(mcat) + '</div>' : '';
-    }
-    var cat = getCategory(STATE.activeCategoryId);
-    if(!cat) return '<div class="wrap"></div>';
-    var isCopas = cat.format==='copas4zonas';
-    var groupNote = cat.format==='cruce2zonas' ? 'Todos contra todos · definen 1° al 10°' : 'Todos contra todos · definen Copa Oro, Plata y Estímulo';
-    var crossTitle = cat.format==='cruce2zonas' ? 'Cruce de posiciones' : 'Copas';
-    
-    return '<div class="wrap">' +
-      '<div class="readonly-banner"><span class="dot"></span> ' + esc(sheetStatus.message) + '</div>' +
-      '<div class="section"><div class="section-head"><h2 class="section-title">Fixture</h2><span class="section-note">' + esc(groupNote) + '</span></div>' +
-        renderFixtureSection(cat) + '</div>' +
-      '<div class="section"><div class="section-head"><h2 class="section-title">Posiciones</h2><span class="section-note">Tabla de cada zona</span></div>' +
-        cat.zones.map(function(z){ return renderStandingsBlock(cat, z); }).join('') + '</div>' +
-      '<div class="section"><div class="section-head"><h2 class="section-title">' + esc(crossTitle) + '</h2></div>' +
-        renderBracketFixtureSection(cat) + '</div>' +
-    '</div>';
-  }
-
-  function renderModalidad(cat){
-    var picker = STATE.categories.map(function(c){ return '<button class="mod-cat-btn" role="tab" aria-selected="' + (c.id===cat.id) + '" data-action="modalidad-select-category" data-id="' + c.id + '" type="button">' + esc(c.name) + '</button>'; }).join('');
-    var body = cat.format==='cruce2zonas' ? renderModalidadCruce(cat) : (cat.format==='copas4zonas' ? renderModalidadCopas4(cat) : '');
-    return '<div class="section"><div class="section-head"><h2 class="section-title">¿Cómo se juega?</h2></div><div class="mod-cat-picker">' + picker + '</div>' + body + '</div>';
-  }
-
-  function renderModalidadCruce(cat){
-    return '<div class="mod-card"><div class="mod-step">1</div><div class="mod-copy"><h4>Fase de grupos</h4><p>Los equipos se dividen en 2 zonas. Juegan todos contra todos.</p></div></div>' +
-           '<div class="mod-card"><div class="mod-step">2</div><div class="mod-copy"><h4>Cruce de posiciones</h4><p>Terminada la fase de grupos, el 1° de la A juega con el 2° de la B (y viceversa). Los ganadores de esos cruces van a la Final.</p></div></div>';
-  }
-  function renderModalidadCopas4(cat){
-    return '<div class="mod-card"><div class="mod-step">1</div><div class="mod-copy"><h4>Fase de grupos</h4><p>Los equipos se dividen en 4 zonas y juegan todos contra todos.</p></div></div>' +
-           '<div class="mod-card"><div class="mod-step">2</div><div class="mod-copy"><h4>Armado de Copas</h4><p>Los 1° y 2° de cada zona van a Copa Oro (8 equipos). Los 3° y 4° a Copa Plata (8 equipos). El 5° de cada zona juega un cuadrangular por la Copa Estímulo.</p></div></div>' +
-           '<div class="mod-card"><div class="mod-step">3</div><div class="mod-copy"><h4>Playoffs (Oro y Plata)</h4><p>Juegan cuartos de final, semis y final. Quienes pierden sus partidos también siguen jugando para definir los puestos de más abajo.</p></div></div>';
+  function renderEncabezado(){
+    var el = document.getElementById('sync-meta');
+    if(!el) return;
+    var enVivo = contarEnVivo();
+    var esErr = state.sync.state === 'error';
+    el.innerHTML =
+      (enVivo>0 ? '<span class="live-chip"><span class="live-dot"></span>' + enVivo + ' en vivo</span>' : '') +
+      '<span class="sync-chip' + (esErr?' err':'') + '" title="' + esc(state.sync.message) + '">' +
+        (state.sync.lastSync ? 'Última actualización: ' + fmtHora(state.sync.lastSync) : 'Conectando...') +
+        (esErr ? ' (reintentando)' : '') +
+      '</span>';
+    var banner = document.getElementById('readonly-msg');
+    if(banner) banner.textContent = state.sync.message;
   }
 
   function render(){
     var app = document.getElementById('app');
-    if(app) app.innerHTML = '<div class="scorebar">' + renderScorebar() + '</div>' + renderMain();
-  }
-
-  function renderPartial(){
-    var app = document.getElementById('app');
-    if(app){
-       var scorebarNode = app.querySelector('.scorebar');
-       var bannerNode = app.querySelector('.readonly-banner');
-       if(scorebarNode) scorebarNode.innerHTML = renderScorebar();
-       if(bannerNode) bannerNode.innerHTML = '<span class="dot"></span> ' + esc(sheetStatus.message);
-    }
+    var tabs = [
+      {id:'sub16', label:'Sub 16'},
+      {id:'sub14', label:'Sub 14'}
+    ];
+    app.innerHTML =
+      '<div class="topbar"><div class="topbar-inner">' +
+        '<p class="eyebrow">Marcador en vivo</p>' +
+        '<h1 class="titulo">' + esc(TOURNAMENT_TITLE) + '</h1>' +
+        '<div class="top-meta" id="sync-meta"></div>' +
+      '</div></div>' +
+      '<div class="tabbar">' + tabs.map(function(t){
+        return '<button class="tab" role="tab" aria-selected="' + (t.id===state.activeTab) + '" data-tab="' + t.id + '" type="button">' + esc(t.label) + '</button>';
+      }).join('') + '</div>' +
+      '<div class="readonly-banner"><span class="dot"></span><span id="readonly-msg">' + esc(state.sync.message) + '</span></div>' +
+      '<div class="wrap">' + renderFixture(state.matches[state.activeTab]) + '</div>';
+    renderEncabezado();
   }
 
   document.addEventListener('click', function(e){
-    var el = e.target.closest('[data-action]');
-    if(!el) return;
-    var action = el.dataset.action;
-    if(action==='switch-category'){ STATE.activeCategoryId = el.dataset.id; ui.view='torneo'; render(); }
-    else if(action==='show-modalidad'){ ui.view = 'modalidad'; ui.modalidadCategoryId = STATE.activeCategoryId; render(); }
-    else if(action==='modalidad-select-category'){ ui.modalidadCategoryId = el.dataset.id; render(); }
-    else if(action==='toggle-tv'){
-      document.body.classList.toggle('tv-mode');
-      if(document.body.classList.contains('tv-mode')){
-        tvTimer = setInterval(function(){
-          ui.tvIndex = (ui.tvIndex+1) % STATE.categories.length;
-          STATE.activeCategoryId = STATE.categories[ui.tvIndex].id; render();
-        }, 15000);
-      } else if(tvTimer){ clearInterval(tvTimer); tvTimer=null; }
-      render();
-    }
+    var btn = e.target.closest('[data-tab]');
+    if(!btn) return;
+    state.activeTab = btn.dataset.tab;
+    render();
   });
 
-  STATE.categories.forEach(c => refreshCategory(c));
   render();
-  startSheetWatch();
+  sincronizar();
 }
 
-// INICIALIZACIÓN DE LA ESTRUCTURA DEL TORNEO 2026
-APP({
-  "tournamentName": "20° Encuentro Torneo Internacional de Hockey",
-  "subtitle": "Carlos Paz Rugby Club · 25, 26 y 27 de septiembre",
-  "activeCategoryId": "sub16",
-  "categories": [
-    {
-      "id": "sub16", "name": "Sub 16", "format": "cruce2zonas",
-      "pointsWin": 3, "pointsDraw": 1, "pointsLoss": 0,
-      "zones": [
-        {"id": "A", "name": "Zona A", "teams": ["Dep. Libertad San Fco", "CAI Ricardone", "Carlos Paz RC B", "Uni Nacional del Chaco Austral", "CAI Escobar"]},
-        {"id": "B", "name": "Zona B", "teams": ["Liga del Sudeste Cordobés", "Puerto San Gregorio", "Banco Rugby Mendoza", "Neuquén RC", "Carlos Paz RC A"]}
-      ],
-      "matches": [
-        {"id": "m3", "stage": "grupos", "zoneId": "A", "teamA": "CAI Ricardone", "teamB": "Carlos Paz RC B", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "3"},
-        {"id": "m1", "stage": "grupos", "zoneId": "A", "teamA": "Dep. Libertad San Fco", "teamB": "Uni Nacional del Chaco Austral", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "1"},
-        {"id": "m9", "stage": "grupos", "zoneId": "A", "teamA": "CAI Escobar", "teamB": "Carlos Paz RC B", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "9"},
-        {"id": "m7", "stage": "grupos", "zoneId": "A", "teamA": "Dep. Libertad San Fco", "teamB": "CAI Ricardone", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "7"},
-        {"id": "m5", "stage": "grupos", "zoneId": "A", "teamA": "Uni Nacional del Chaco Austral", "teamB": "CAI Escobar", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "5"},
-        {"id": "m17", "stage": "grupos", "zoneId": "A", "teamA": "CAI Ricardone", "teamB": "CAI Escobar", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "17"},
-        {"id": "m15", "stage": "grupos", "zoneId": "A", "teamA": "Carlos Paz RC B", "teamB": "Uni Nacional del Chaco Austral", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "15"},
-        {"id": "m13", "stage": "grupos", "zoneId": "A", "teamA": "Dep. Libertad San Fco", "teamB": "CAI Escobar", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "13"},
-        {"id": "m19", "stage": "grupos", "zoneId": "A", "teamA": "Dep. Libertad San Fco", "teamB": "Carlos Paz RC B", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "19"},
-        {"id": "m11", "stage": "grupos", "zoneId": "A", "teamA": "Uni Nacional del Chaco Austral", "teamB": "CAI Ricardone", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "11"},
-        {"id": "m4", "stage": "grupos", "zoneId": "B", "teamA": "Puerto San Gregorio", "teamB": "Banco Rugby Mendoza", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "4"},
-        {"id": "m2", "stage": "grupos", "zoneId": "B", "teamA": "Liga del Sudeste Cordobés", "teamB": "Neuquén RC", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "2"},
-        {"id": "m10", "stage": "grupos", "zoneId": "B", "teamA": "Carlos Paz RC A", "teamB": "Banco Rugby Mendoza", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "10"},
-        {"id": "m8", "stage": "grupos", "zoneId": "B", "teamA": "Liga del Sudeste Cordobés", "teamB": "Puerto San Gregorio", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "8"},
-        {"id": "m6", "stage": "grupos", "zoneId": "B", "teamA": "Neuquén RC", "teamB": "Carlos Paz RC A", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "6"},
-        {"id": "m18", "stage": "grupos", "zoneId": "B", "teamA": "Puerto San Gregorio", "teamB": "Carlos Paz RC A", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "18"},
-        {"id": "m16", "stage": "grupos", "zoneId": "B", "teamA": "Banco Rugby Mendoza", "teamB": "Neuquén RC", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "16"},
-        {"id": "m14", "stage": "grupos", "zoneId": "B", "teamA": "Liga del Sudeste Cordobés", "teamB": "Carlos Paz RC A", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "14"},
-        {"id": "m20", "stage": "grupos", "zoneId": "B", "teamA": "Liga del Sudeste Cordobés", "teamB": "Banco Rugby Mendoza", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "20"},
-        {"id": "m12", "stage": "grupos", "zoneId": "B", "teamA": "Neuquén RC", "teamB": "Puerto San Gregorio", "scoreA": null, "scoreB": null, "status": "pendiente", "key": "12"}
-      ]
-    },
-    {
-      "id": "sub14", "name": "Sub 14", "format": "copas4zonas",
-      "pointsWin": 3, "pointsDraw": 1, "pointsLoss": 0,
-      "zones": [
-        {"id": "A", "name": "Zona A", "teams": ["Neuquén RC Azul", "Carlos Paz RC B", "Ribosqui Hockey Mendoza", "CAI Ricardone", "Liga del Sudeste Cordobés"]},
-        {"id": "B", "name": "Zona B", "teams": ["UVT Azul", "C.D.S. Arroyito Blanco", "Puerto San Gregorio", "Castex La Pampa", "E.M.F.I."]},
-        {"id": "C", "name": "Zona C", "teams": ["Neuquén RC Blanco", "Carlos Paz RC A", "San Javier Hockey", "Huracán Carlos Tejedor", "Banco Rugby Mendoza"]},
-        {"id": "D", "name": "Zona D", "teams": ["Neuquén RC C", "UVT Granate", "C.D.S. Arroyito Verde", "Dep. Libertad San Fco", "Central Norte Salta"]}
-      ],
-      "matches": [
-        {"id": "m14_1", "stage": "grupos", "zoneId": "A", "teamA": "CAI Ricardone", "teamB": "Neuquén RC Azul", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_3", "stage": "grupos", "zoneId": "A", "teamA": "Ribosqui Hockey Mendoza", "teamB": "Carlos Paz RC B", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_9", "stage": "grupos", "zoneId": "A", "teamA": "CAI Ricardone", "teamB": "Liga del Sudeste Cordobés", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_13", "stage": "grupos", "zoneId": "A", "teamA": "Carlos Paz RC B", "teamB": "Neuquén RC Azul", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_15", "stage": "grupos", "zoneId": "A", "teamA": "Ribosqui Hockey Mendoza", "teamB": "Liga del Sudeste Cordobés", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_21", "stage": "grupos", "zoneId": "A", "teamA": "Carlos Paz RC B", "teamB": "CAI Ricardone", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_23", "stage": "grupos", "zoneId": "A", "teamA": "Neuquén RC Azul", "teamB": "Liga del Sudeste Cordobés", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_29", "stage": "grupos", "zoneId": "A", "teamA": "Ribosqui Hockey Mendoza", "teamB": "CAI Ricardone", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_33", "stage": "grupos", "zoneId": "A", "teamA": "Neuquén RC Azul", "teamB": "Ribosqui Hockey Mendoza", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_37", "stage": "grupos", "zoneId": "A", "teamA": "Liga del Sudeste Cordobés", "teamB": "Carlos Paz RC B", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        
-        {"id": "m14_5", "stage": "grupos", "zoneId": "B", "teamA": "Castex La Pampa", "teamB": "UVT Azul", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_7", "stage": "grupos", "zoneId": "B", "teamA": "Puerto San Gregorio", "teamB": "C.D.S. Arroyito Blanco", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_11", "stage": "grupos", "zoneId": "B", "teamA": "E.M.F.I.", "teamB": "Castex La Pampa", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_17", "stage": "grupos", "zoneId": "B", "teamA": "C.D.S. Arroyito Blanco", "teamB": "UVT Azul", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_19", "stage": "grupos", "zoneId": "B", "teamA": "Puerto San Gregorio", "teamB": "E.M.F.I.", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_25", "stage": "grupos", "zoneId": "B", "teamA": "C.D.S. Arroyito Blanco", "teamB": "Castex La Pampa", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_27", "stage": "grupos", "zoneId": "B", "teamA": "UVT Azul", "teamB": "E.M.F.I.", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_31", "stage": "grupos", "zoneId": "B", "teamA": "Puerto San Gregorio", "teamB": "Castex La Pampa", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_35", "stage": "grupos", "zoneId": "B", "teamA": "E.M.F.I.", "teamB": "C.D.S. Arroyito Blanco", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_39", "stage": "grupos", "zoneId": "B", "teamA": "UVT Azul", "teamB": "Puerto San Gregorio", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        
-        {"id": "m14_2", "stage": "grupos", "zoneId": "C", "teamA": "Huracán Carlos Tejedor", "teamB": "Neuquén RC Blanco", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_4", "stage": "grupos", "zoneId": "C", "teamA": "San Javier Hockey", "teamB": "Carlos Paz RC A", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_10", "stage": "grupos", "zoneId": "C", "teamA": "Banco Rugby Mendoza", "teamB": "Huracán Carlos Tejedor", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_14", "stage": "grupos", "zoneId": "C", "teamA": "Carlos Paz RC A", "teamB": "Neuquén RC Blanco", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_16", "stage": "grupos", "zoneId": "C", "teamA": "San Javier Hockey", "teamB": "Banco Rugby Mendoza", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_22", "stage": "grupos", "zoneId": "C", "teamA": "Carlos Paz RC A", "teamB": "Huracán Carlos Tejedor", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_24", "stage": "grupos", "zoneId": "C", "teamA": "Neuquén RC Blanco", "teamB": "Banco Rugby Mendoza", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_30", "stage": "grupos", "zoneId": "C", "teamA": "San Javier Hockey", "teamB": "Huracán Carlos Tejedor", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_34", "stage": "grupos", "zoneId": "C", "teamA": "Banco Rugby Mendoza", "teamB": "Carlos Paz RC A", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_36", "stage": "grupos", "zoneId": "C", "teamA": "Neuquén RC Blanco", "teamB": "San Javier Hockey", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        
-        {"id": "m14_6", "stage": "grupos", "zoneId": "D", "teamA": "Dep. Libertad San Fco", "teamB": "Neuquén RC C", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_8", "stage": "grupos", "zoneId": "D", "teamA": "C.D.S. Arroyito Verde", "teamB": "UVT Granate", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_12", "stage": "grupos", "zoneId": "D", "teamA": "Central Norte Salta", "teamB": "Dep. Libertad San Fco", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_18", "stage": "grupos", "zoneId": "D", "teamA": "UVT Granate", "teamB": "Neuquén RC C", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_20", "stage": "grupos", "zoneId": "D", "teamA": "C.D.S. Arroyito Verde", "teamB": "Central Norte Salta", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_26", "stage": "grupos", "zoneId": "D", "teamA": "UVT Granate", "teamB": "Dep. Libertad San Fco", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_28", "stage": "grupos", "zoneId": "D", "teamA": "Neuquén RC C", "teamB": "Central Norte Salta", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_32", "stage": "grupos", "zoneId": "D", "teamA": "C.D.S. Arroyito Verde", "teamB": "Dep. Libertad San Fco", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_38", "stage": "grupos", "zoneId": "D", "teamA": "Central Norte Salta", "teamB": "UVT Granate", "scoreA": null, "scoreB": null, "status": "pendiente"},
-        {"id": "m14_40", "stage": "grupos", "zoneId": "D", "teamA": "Neuquén RC C", "teamB": "C.D.S. Arroyito Verde", "scoreA": null, "scoreB": null, "status": "pendiente"}
-      ]
-    }
-  ]
-});
+APP();
 </script>
 </body>
 </html>
