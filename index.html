@@ -140,31 +140,6 @@ body.tv-mode table.standings{font-size:15px}
 .mod-copy{min-width:0}
 .mod-copy h4{ margin:0 0 6px; font-family:"Big Shoulders Display", sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.01em; font-size:16px; color:var(--turf-600);}
 .mod-copy p{margin:0 0 10px; font-size:13.5px; color:var(--ink); line-height:1.55}
-.cross-diagram{width:100%; height:auto; margin:6px 0 4px; display:block}
-.cross-diagram .cd-col-label{ fill:var(--turf-600); font-family:"Big Shoulders Display", sans-serif; font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:.02em; text-anchor:middle;}
-.cross-diagram .cd-box{fill:var(--surface); stroke:var(--border); stroke-width:1.5}
-.cross-diagram .cd-badge-bg{fill:var(--turf-600)}
-.cross-diagram .cd-badge-text{ fill:#fff; font-family:"Big Shoulders Display", sans-serif; font-weight:800; font-size:15px; text-anchor:middle; dominant-baseline:central;}
-.cross-diagram .cd-line{stroke:var(--turf-600); stroke-width:2.5; opacity:.55}
-.cross-diagram .cd-line-straight{stroke:var(--ink-muted); stroke-width:2.5; opacity:.55; stroke-dasharray:5 4}
-.cross-diagram .cd-badge-bg.cd-badge-oro{fill:var(--gold)}
-.cross-diagram .cd-badge-text.cd-badge-text-oro{fill:var(--gold-ink)}
-.cross-diagram .cd-badge-bg.cd-badge-plata{fill:var(--plata)}
-.cross-diagram .cd-badge-text.cd-badge-text-plata{fill:#fff}
-.cross-diagram .cd-badge-bg.cd-badge-estimulo{fill:var(--coral)}
-.cross-diagram .cd-badge-text.cd-badge-text-estimulo{fill:#fff}
-.cross-diagram .cd-line-oro{stroke:var(--gold); opacity:.7}
-.cross-diagram .cd-line-plata{stroke:var(--plata); opacity:.7}
-.cross-diagram .cd-line-estimulo{stroke:var(--coral); opacity:.7}
-.cross-diagram-pair{display:flex; gap:18px; flex-wrap:wrap; margin:6px 0 10px}
-.cross-diagram-pair > div{flex:1; min-width:260px}
-.mod-example-label{margin:14px 0 4px !important; font-size:12.5px !important; font-weight:600; color:var(--ink-muted) !important; font-style:italic}
-.cd-legend{display:flex; gap:14px; flex-wrap:wrap; margin:2px 0 14px; font-size:12px; color:var(--ink-muted)}
-.cd-legend span{display:inline-flex; align-items:center; gap:6px}
-.cd-legend i{width:12px; height:12px; border-radius:3px; display:inline-block}
-.cd-legend i.cd-dot-oro{background:var(--gold)}
-.cd-legend i.cd-dot-plata{background:var(--plata)}
-.cd-legend i.cd-dot-estimulo{background:var(--coral)}
 </style>
 </head>
 <body>
@@ -175,11 +150,11 @@ body.tv-mode table.standings{font-size:15px}
 // ==============================================================================
 const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxXZAUCAKEeR_ygVVJr9S6jZHToaZVTJ3rgCPb9Kb3e32SnFsaLzBQTI_awZq3agWAC/exec';
 
-// Pega aquí solo la mezcla de letras y números del ID de cada planilla de Google Sheets
-const ID_PLANILLA_SUB16 = '1W22MF_O_DjRzpZWQo78OjjMJeS7hlpTqWaWFBVAoAqs';
-const ID_PLANILLA_SUB14 = '1qosQZas3b7bpQXRlB21AMk4bATFm88-P5FTnws1gBQM';
+// PEGA AQUÍ LOS IDs DE TUS DOS PLANILLAS
+const ID_PLANILLA_SUB16 = '1qosQZas3b7bpQXRlB21AMk4bATFm88-P5FTnws1gBQM';
+const ID_PLANILLA_SUB14 = '1W22MF_O_DjRzpZWQo78OjjMJeS7hlpTqWaWFBVAoAqs';
 
-const INTERVALO_ACTUALIZACION = 15000; // 15 segundos
+const INTERVALO_ACTUALIZACION = 30000; 
 
 function APP(STATE){
   "use strict";
@@ -187,9 +162,18 @@ function APP(STATE){
   var ui = { view:'torneo', modalidadCategoryId: STATE.activeCategoryId, tvIndex:0 };
   var tvTimer = null;
   var sheetWatchUnsub = null;
-  var sheetStatus = { state:'idle', message:'Conectando a Google Sheets en tiempo real...', lastSync:null };
+  var sheetStatus = { state:'idle', message:'Conectando a Google Sheets...', lastSync:null };
 
-  // --- Funciones Helpers para crear partidos vacíos ---
+  // --- Funciones Helpers para Limpiar Texto y Comparar ---
+  function stripAccents(s){
+    if(!s) return '';
+    try{ return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }catch(e){ return String(s); }
+  }
+  function eq(a, b) {
+    if(!a || !b) return false;
+    return stripAccents(String(a).toLowerCase().trim()) === stripAccents(String(b).toLowerCase().trim());
+  }
+
   function uid(){ return 'm' + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
   function makeMatch(partial){
     return Object.assign({
@@ -203,7 +187,7 @@ function APP(STATE){
   function getCategory(id){ return STATE.categories.find(function(c){ return c.id===id; }); }
 
   var DAY_ORDER = ['vie','sab','dom'];
-  var DAY_LABELS = { vie:'Viernes 25/9', sab:'Sábado 26/9', dom:'Domingo 27/9' };
+  var DAY_LABELS = { vie:'Viernes', sab:'Sábado', dom:'Domingo' };
   function dayLabel(code){ return DAY_LABELS[code] || 'Fecha a confirmar'; }
   function dayIndex(code){ var i = DAY_ORDER.indexOf(code); return i===-1 ? 99 : i; }
 
@@ -237,8 +221,8 @@ function APP(STATE){
       var diff = 0;
       matches.forEach(function(m){
         if(m.status!=='final' || m.scoreA==null || m.scoreB==null) return;
-        if(m.teamA===teamX && m.teamB===teamY) diff += (m.scoreA - m.scoreB);
-        else if(m.teamA===teamY && m.teamB===teamX) diff += (m.scoreB - m.scoreA);
+        if(eq(m.teamA, teamX) && eq(m.teamB, teamY)) diff += (m.scoreA - m.scoreB);
+        else if(eq(m.teamA, teamY) && eq(m.teamB, teamX)) diff += (m.scoreB - m.scoreA);
       });
       return diff;
     }
@@ -262,9 +246,6 @@ function APP(STATE){
     if(m.shootoutWinner) return m.shootoutWinner;
     return null;
   }
-  function winnerName(m){ var w=winnerOf(m); return w==='A'?m.teamA:(w==='B'?m.teamB:null); }
-  function loserName(m){ var w=winnerOf(m); if(!w) return null; return w==='A'?m.teamB:m.teamA; }
-
   function computeTier(cat, tier){
     if(!cat.zones.length) return null;
     var allComplete = cat.zones.every(function(z){ return zoneComplete(cat, z.id); });
@@ -312,7 +293,6 @@ function APP(STATE){
   }
 
   function Zp(zoneId, pos, label){ return {src:{k:'zonePos', zoneId:zoneId, pos:pos}, label:label}; }
-  function Tr(tier, rank, label){ return {src:{k:'tier', tier:tier, rank:rank}, label:label}; }
   function Wn(key){ return {src:{k:'win', ref:key}, label:'Ganador P.' + key}; }
   function Ls(key){ return {src:{k:'lose', ref:key}, label:'Perdedor P.' + key}; }
 
@@ -373,7 +353,6 @@ function APP(STATE){
     return null;
   }
 
-  // ESTA FUNCIÓN AUTO-CREA LOS PARTIDOS DE PLAYOFF SI FALTAN
   function syncPlayoffTeams(cat){
     var specs = buildBracketSpecs(cat);
     if(!specs) return;
@@ -382,7 +361,6 @@ function APP(STATE){
       var teamB = resolveSource(cat, spec.B.src);
       var m = cat.matches.find(function(x){ return x.key===spec.key; });
       
-      // Si el partido de copa no existe, lo crea
       if(!m){
         cat.matches.push(makeMatch({
           stage:'bracket', key:spec.key, groupKey:spec.group, roundLabel:spec.round,
@@ -445,49 +423,49 @@ function APP(STATE){
       var teamA = (r['EquipoA']||'').trim();
       var teamB = (r['EquipoB']||'').trim();
       
-      // NUEVO: Leemos Día, Hora y N° para ordenar las tarjetas
-      var num = (r['N°']||r['Nro']||r['Numero']||'').trim();
+      var num = (r['N°']||r['Nro']||r['Nro.']||r['Numero']||r['Partido']||'').trim();
       var diaStr = (r['Día']||r['Dia']||'').trim().toLowerCase();
       var hora = (r['Hora']||'').trim();
       var cancha = (r['Cancha']||'').trim();
       
-      if(!catName || !teamA || !teamB) return;
+      if(!catName || (!teamA && !teamB)) return;
       
-      var cat = STATE.categories.find(function(c){ return c.name.trim().toLowerCase()===catName.toLowerCase(); });
+      var cat = STATE.categories.find(function(c){ return eq(c.name, catName); });
       if(!cat) return;
       
-      // Buscamos TODOS los partidos en los que se enfrenten estos dos equipos (pueden cruzarse en zona y en final)
       var matchingMatches = cat.matches.filter(function(x){
-        return (x.teamA===teamA && x.teamB===teamB) || (x.teamA===teamB && x.teamB===teamA);
+        var xA = x.teamA || '';
+        var xB = x.teamB || '';
+        var match = (eq(xA, teamA) && eq(xB, teamB)) || (eq(xA, teamB) && eq(xB, teamA));
+        
+        if (!match) {
+            var slotA = x.slotLabelA || '';
+            var slotB = x.slotLabelB || '';
+            match = (eq(slotA, teamA) && eq(slotB, teamB)) || (eq(slotA, teamB) && eq(slotB, teamA));
+        }
+
+        if (match && zoneName !== "" && x.zoneId) {
+           var z = cat.zones.find(function(z) { return z.id === x.zoneId; });
+           if (z && !eq(z.name, zoneName)) return false;
+        }
+        return match;
       });
       
       if(!matchingMatches.length) return;
+      var m = matchingMatches[0];
       
-      var m = matchingMatches[0]; // Por defecto agarra el primero que encuentre
-      
-      // Si en el Excel especificaste una Zona, buscamos el partido exacto que corresponda a esa zona
-      if (zoneName !== "") {
-         var exactMatch = matchingMatches.find(function(x) {
-             var catZone = cat.zones.find(function(z) { return z.id === x.zoneId; });
-             return catZone && catZone.name.toLowerCase() === zoneName.toLowerCase();
-         });
-         if (exactMatch) m = exactMatch;
-      }
-      
-      // --- ACTUALIZAR DATOS DE ORDENAMIENTO (Día, Hora, Número) ---
-      if(num && m.matchNum !== parseInt(num, 10)) { m.matchNum = parseInt(num, 10); m.key = num; changed = true; }
+      var numInt = parseInt(num, 10);
+      if(!isNaN(numInt) && m.matchNum !== numInt) { m.matchNum = numInt; m.key = String(numInt); changed = true; }
       if(hora && m.time !== hora) { m.time = hora; changed = true; }
       if(cancha && m.court !== cancha) { m.court = cancha; changed = true; }
       
-      // Traducir el día del Excel al formato del código ('vie', 'sab', 'dom')
       var mappedDay = m.day;
       if(diaStr.includes('vie')) mappedDay = 'vie';
       else if(diaStr.includes('sab') || diaStr.includes('sáb')) mappedDay = 'sab';
       else if(diaStr.includes('dom')) mappedDay = 'dom';
-      if(mappedDay && m.day !== mappedDay) { m.day = mappedDay; changed = true; }
-
       
-      // --- ESTADO AUTOMÁTICO BASADO EN GOLES ---
+      if(mappedDay && m.day !== mappedDay) { m.day = mappedDay; changed = true; }
+      
       var gaRaw = (r['GolesA']==null ? '' : String(r['GolesA']).trim());
       var gbRaw = (r['GolesB']==null ? '' : String(r['GolesB']).trim());
       
@@ -501,8 +479,8 @@ function APP(STATE){
       var gaNum = gaRaw==='' ? null : parseInt(gaRaw, 10);
       var gbNum = gbRaw==='' ? null : parseInt(gbRaw, 10);
       
-      var newScoreA = m.teamA===teamA ? gaNum : gbNum;
-      var newScoreB = m.teamA===teamA ? gbNum : gaNum;
+      var newScoreA = eq(m.teamA || m.slotLabelA, teamA) ? gaNum : gbNum;
+      var newScoreB = eq(m.teamA || m.slotLabelA, teamA) ? gbNum : gaNum;
       
       if(m.scoreA!==newScoreA || m.scoreB!==newScoreB || m.status!==status){
         m.scoreA = newScoreA; m.scoreB = newScoreB; m.status = status;
@@ -513,50 +491,89 @@ function APP(STATE){
     return changed;
   }
 
+  // OPTIMIZACIÓN VITAL PARA GOOGLE APPS SCRIPT
+  async function fetchJSONSafely(id) {
+    try {
+      // CUIDADO: NO agregar opciones extra al fetch (como headers o cache: 'no-store').
+      // Eso obliga al navegador a hacer una petición CORS preflight (OPTIONS) y 
+      // Google Apps Script no las soporta, bloqueando la conexión.
+      // Usar simplemente ?t=Date.now() es suficiente para saltar el caché de forma segura.
+      const targetUrl = URL_SCRIPT + '?id=' + id + '&t=' + Date.now();
+      const response = await fetch(targetUrl, { 
+        method: 'GET',
+        redirect: 'follow'
+      });
+      
+      if (!response.ok) return { error: `HTTP ${response.status}` };
+      const text = await response.text();
+      
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        // Si el Script de Google tiene permisos incorrectos, devolverá una página HTML en vez de JSON
+        return { error: 'El script web no devolvió JSON válido. (Probable error interno del Script)' };
+      }
+    } catch(err) {
+      return { error: 'Bloqueo CORS / Fallo de red' };
+    }
+  }
+
   async function syncNow() {
     try {
       if(!ID_PLANILLA_SUB16 || !ID_PLANILLA_SUB14) {
-         sheetStatus = { state:'error', message: 'Falta configurar los IDs de las planillas', lastSync: sheetStatus.lastSync };
-         render(); return;
+         sheetStatus = { state:'error', message: 'Falta configurar los IDs', lastSync: sheetStatus.lastSync };
+         renderPartial(); return;
       }
 
-      // Agregamos un timestamp a la URL para forzar al navegador a que no use caché
-      const [res16, res14] = await Promise.all([
-        fetch(URL_SCRIPT + '?id=' + ID_PLANILLA_SUB16 + '&t=' + Date.now()),
-        fetch(URL_SCRIPT + '?id=' + ID_PLANILLA_SUB14 + '&t=' + Date.now())
-      ]);
+      const rows16 = await fetchJSONSafely(ID_PLANILLA_SUB16);
+      const rows14 = await fetchJSONSafely(ID_PLANILLA_SUB14);
       
-      if(!res16.ok || !res14.ok) throw new Error('Error al conectar con el servidor');
+      let allRows = [];
+      let hasErrors = false;
+      let errMsg = "";
+
+      if(rows16 && !rows16.error && Array.isArray(rows16)) {
+        rows16.forEach(r => r['Categoria'] = 'Sub 16');
+        allRows = allRows.concat(rows16);
+      } else {
+        hasErrors = true; errMsg += "Error Sub16: " + (rows16.error || 'falló') + ". ";
+      }
       
-      const rows16 = await res16.json();
-      const rows14 = await res14.json();
+      if(rows14 && !rows14.error && Array.isArray(rows14)) {
+        rows14.forEach(r => r['Categoria'] = 'Sub 14');
+        allRows = allRows.concat(rows14);
+      } else {
+        hasErrors = true; errMsg += "Error Sub14: " + (rows14.error || 'falló') + ". ";
+      }
       
-      if(rows16.error) throw new Error('Sub16: ' + rows16.error);
-      if(rows14.error) throw new Error('Sub14: ' + rows14.error);
+      let isDataChanged = applySheetRows(allRows);
+      let priorDataState = JSON.stringify(STATE.categories);
       
-      // Inyectamos la categoría porque la planilla de origen no la tiene
-      rows16.forEach(r => r['Categoria'] = 'Sub 16');
-      rows14.forEach(r => r['Categoria'] = 'Sub 14');
-      
-      const allRows = rows16.concat(rows14);
-      const changed = applySheetRows(allRows);
-      
-      // Siempre forzamos el refresco para que ordene bien las tarjetas aunque no cambien los goles
       STATE.updatedAt = new Date().toISOString();
       STATE.categories.forEach(c => refreshCategory(c));
+
+      let hasBracketChanges = priorDataState !== JSON.stringify(STATE.categories);
       
-      sheetStatus = { state:'ok', message: 'Sincronizado en tiempo real', lastSync: new Date().toISOString() };
-      render();
+      if (hasErrors) {
+        sheetStatus = { state:'error', message: errMsg, lastSync: sheetStatus.lastSync || STATE.updatedAt };
+        renderPartial(); 
+      } else {
+        sheetStatus = { state:'ok', message: 'Sincronizado en tiempo real', lastSync: STATE.updatedAt };
+        if (isDataChanged || hasBracketChanges) {
+           render();
+        } else {
+           renderPartial(); 
+        }
+      }
     } catch(err) {
-      console.error(err);
-      sheetStatus = { state:'error', message: err.message || 'Error de conexión', lastSync: sheetStatus.lastSync };
-      render();
+      sheetStatus = { state:'error', message: 'Error de red general', lastSync: sheetStatus.lastSync };
+      renderPartial();
     }
   }
 
   function startSheetWatch(){
     if(sheetWatchUnsub) return;
-    syncNow();
+    setTimeout(syncNow, 1000); 
     sheetWatchUnsub = setInterval(syncNow, INTERVALO_ACTUALIZACION);
   }
 
@@ -616,11 +633,12 @@ function APP(STATE){
     var matches = cat.matches.filter(function(m){ return m.stage==='grupos'; });
     if(!matches.length) return '<p class="empty-note">No hay partidos cargados.</p>';
     var zoneName = {}; cat.zones.forEach(function(z){ zoneName[z.id] = z.name; });
+    
     var byDay = {};
     matches.forEach(function(m){ var d = m.day || ''; (byDay[d] = byDay[d] || []).push(m); });
     var days = Object.keys(byDay).sort(function(a,b){ return dayIndex(a) - dayIndex(b); });
+    
     return days.map(function(d){
-      // NUEVO ORDENAMIENTO: Primero por hora, si es igual, por número de partido.
       var list = byDay[d].slice().sort(function(x,y){ 
         var t = (x.time||'').localeCompare(y.time||''); 
         if(t!==0) return t;
@@ -629,22 +647,6 @@ function APP(STATE){
       return '<div class="day-block"><h3 class="day-title">' + esc(dayLabel(d)) + '</h3>' +
         '<div class="match-grid">' + list.map(function(m){ return renderMatchCard(m, zoneName[m.zoneId]); }).join('') + '</div></div>';
     }).join('');
-  }
-
-  function renderBracketMatchByKey(cat, key){
-    var m = cat.matches.find(function(x){ return x.key===key; });
-    if(!m) return '<div class="bracket-slot"><div class="match-row"><span class="match-team">A definir</span></div><div class="match-row"><span class="match-team">A definir</span></div></div>';
-    var winner = winnerOf(m), scoreA = m.scoreA==null ? '' : m.scoreA, scoreB = m.scoreB==null ? '' : m.scoreB;
-    var statusHtml = m.status==='vivo' ? '<span class="live-dot"></span> En vivo' : statusLabel(m.status);
-    var metaBits = [];
-    if(m.day) metaBits.push(dayLabel(m.day));
-    if(m.time) metaBits.push(m.time);
-    return '<div class="bracket-slot">' +
-      (m.status!=='pendiente' ? '<div class="match-status ' + m.status + '">' + statusHtml + '</div>' : '') +
-      '<div class="match-row' + (winner==='A'?' win':'') + '"><span class="match-team">' + esc(m.teamA || m.slotLabelA || 'A definir') + '</span><span class="match-score tabular">' + scoreA + '</span></div>' +
-      '<div class="match-row' + (winner==='B'?' win':'') + '"><span class="match-team">' + esc(m.teamB || m.slotLabelB || 'A definir') + '</span><span class="match-score tabular">' + scoreB + '</span></div>' +
-      (metaBits.length ? '<div class="match-meta"><span>' + esc(metaBits.join(' · ')) + '</span></div>' : '') +
-    '</div>';
   }
 
   function renderStandingsGenericTable(rows, startPos){
@@ -664,14 +666,16 @@ function APP(STATE){
   }
 
   var BRACKET_GROUP_DISPLAY_NAMES = {llave:'Cruce', oro:'Copa Oro', plata:'Copa Plata', estimulo:'Copa Estímulo'};
+  
   function renderBracketFixtureSection(cat){
     var matches = cat.matches.filter(function(m){ return m.stage==='bracket'; });
     if(!matches.length) return '<p class="empty-note">No hay partidos de cruces cargados.</p>';
+    
     var byDay = {};
     matches.forEach(function(m){ var d = m.day || ''; (byDay[d] = byDay[d] || []).push(m); });
     var days = Object.keys(byDay).sort(function(a,b){ return dayIndex(a) - dayIndex(b); });
+    
     var html = days.map(function(d){
-      // ORDENAMIENTO CRONOLÓGICO PARA CRUCES
       var list = byDay[d].slice().sort(function(x,y){
         var t = (x.time||'').localeCompare(y.time||'');
         if(t!==0) return t;
@@ -693,7 +697,9 @@ function APP(STATE){
   function renderScorebar(){
     var liveCount = 0;
     STATE.categories.forEach(function(c){ c.matches.forEach(function(m){ if(m.status==='vivo') liveCount++; }); });
-    return '<div class="scorebar"><div class="scorebar-inner">' +
+    var isErr = sheetStatus.state === 'error';
+    var syncColor = isErr ? 'color: var(--coral); border-color: var(--coral)' : '';
+    return '<div class="scorebar-inner">' +
       '<div class="brand-block">' +
         (STATE.sponsorLogo ? '<img class="sponsor-logo" src="' + STATE.sponsorLogo + '" alt="Organiza">' : '') +
         '<div><p class="brand-eyebrow">Marcador en vivo</p><h1 class="brand-title">' + esc(STATE.tournamentName) + '</h1>' +
@@ -701,14 +707,14 @@ function APP(STATE){
       '</div>' +
       '<div class="scorebar-meta">' +
         (liveCount>0 ? '<span class="live-chip"><span class="live-dot"></span>' + liveCount + ' en vivo</span>' : '') +
-        '<span class="updated-chip">Última sync: ' + (sheetStatus.lastSync ? fmtUpdated(sheetStatus.lastSync) : '...') + '</span>' +
+        '<span class="updated-chip" style="' + syncColor + '" title="' + esc(sheetStatus.message) + '">Última sync: ' + (sheetStatus.lastSync ? fmtUpdated(sheetStatus.lastSync) : 'Conectando...') + (isErr?' (Reintentando)':'') + '</span>' +
         '<button class="tv-btn" data-action="toggle-tv" type="button">' + (document.body.classList.contains('tv-mode') ? 'Salir de modo pantalla' : 'Modo pantalla') + '</button>' +
       '</div></div>' +
       '<div class="tabbar">' + STATE.categories.map(function(c){
         return '<button class="tab" role="tab" aria-selected="' + (c.id===STATE.activeCategoryId && ui.view==='torneo') + '" data-action="switch-category" data-id="' + c.id + '" type="button">' + esc(c.name) + '</button>';
       }).join('') +
       '<button class="tab tab-info" role="tab" aria-selected="' + (ui.view==='modalidad') + '" data-action="show-modalidad" type="button">¿Cómo se juega?</button>' +
-    '</div></div>';
+    '</div>';
   }
 
   function renderMain(){
@@ -733,7 +739,6 @@ function APP(STATE){
     '</div>';
   }
 
-  /* ---------------- "¿Cómo se juega?" explainer ---------------- */
   function renderModalidad(cat){
     var picker = STATE.categories.map(function(c){ return '<button class="mod-cat-btn" role="tab" aria-selected="' + (c.id===cat.id) + '" data-action="modalidad-select-category" data-id="' + c.id + '" type="button">' + esc(c.name) + '</button>'; }).join('');
     var body = cat.format==='cruce2zonas' ? renderModalidadCruce(cat) : (cat.format==='copas4zonas' ? renderModalidadCopas4(cat) : '');
@@ -752,7 +757,17 @@ function APP(STATE){
 
   function render(){
     var app = document.getElementById('app');
-    if(app) app.innerHTML = renderScorebar() + renderMain();
+    if(app) app.innerHTML = '<div class="scorebar">' + renderScorebar() + '</div>' + renderMain();
+  }
+
+  function renderPartial(){
+    var app = document.getElementById('app');
+    if(app){
+       var scorebarNode = app.querySelector('.scorebar');
+       var bannerNode = app.querySelector('.readonly-banner');
+       if(scorebarNode) scorebarNode.innerHTML = renderScorebar();
+       if(bannerNode) bannerNode.innerHTML = '<span class="dot"></span> ' + esc(sheetStatus.message);
+    }
   }
 
   document.addEventListener('click', function(e){
@@ -774,11 +789,12 @@ function APP(STATE){
     }
   });
 
-  // BOOT
+  STATE.categories.forEach(c => refreshCategory(c));
+  render();
   startSheetWatch();
 }
 
-// INICIALIZACIÓN CON ESTRUCTURA DEL TORNEO 2026
+// INICIALIZACIÓN DE LA ESTRUCTURA DEL TORNEO 2026
 APP({
   "tournamentName": "20° Encuentro Torneo Internacional de Hockey",
   "subtitle": "Carlos Paz Rugby Club · 25, 26 y 27 de septiembre",
