@@ -140,31 +140,6 @@ body.tv-mode table.standings{font-size:15px}
 .mod-copy{min-width:0}
 .mod-copy h4{ margin:0 0 6px; font-family:"Big Shoulders Display", sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.01em; font-size:16px; color:var(--turf-600);}
 .mod-copy p{margin:0 0 10px; font-size:13.5px; color:var(--ink); line-height:1.55}
-.cross-diagram{width:100%; height:auto; margin:6px 0 4px; display:block}
-.cross-diagram .cd-col-label{ fill:var(--turf-600); font-family:"Big Shoulders Display", sans-serif; font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:.02em; text-anchor:middle;}
-.cross-diagram .cd-box{fill:var(--surface); stroke:var(--border); stroke-width:1.5}
-.cross-diagram .cd-badge-bg{fill:var(--turf-600)}
-.cross-diagram .cd-badge-text{ fill:#fff; font-family:"Big Shoulders Display", sans-serif; font-weight:800; font-size:15px; text-anchor:middle; dominant-baseline:central;}
-.cross-diagram .cd-line{stroke:var(--turf-600); stroke-width:2.5; opacity:.55}
-.cross-diagram .cd-line-straight{stroke:var(--ink-muted); stroke-width:2.5; opacity:.55; stroke-dasharray:5 4}
-.cross-diagram .cd-badge-bg.cd-badge-oro{fill:var(--gold)}
-.cross-diagram .cd-badge-text.cd-badge-text-oro{fill:var(--gold-ink)}
-.cross-diagram .cd-badge-bg.cd-badge-plata{fill:var(--plata)}
-.cross-diagram .cd-badge-text.cd-badge-text-plata{fill:#fff}
-.cross-diagram .cd-badge-bg.cd-badge-estimulo{fill:var(--coral)}
-.cross-diagram .cd-badge-text.cd-badge-text-estimulo{fill:#fff}
-.cross-diagram .cd-line-oro{stroke:var(--gold); opacity:.7}
-.cross-diagram .cd-line-plata{stroke:var(--plata); opacity:.7}
-.cross-diagram .cd-line-estimulo{stroke:var(--coral); opacity:.7}
-.cross-diagram-pair{display:flex; gap:18px; flex-wrap:wrap; margin:6px 0 10px}
-.cross-diagram-pair > div{flex:1; min-width:260px}
-.mod-example-label{margin:14px 0 4px !important; font-size:12.5px !important; font-weight:600; color:var(--ink-muted) !important; font-style:italic}
-.cd-legend{display:flex; gap:14px; flex-wrap:wrap; margin:2px 0 14px; font-size:12px; color:var(--ink-muted)}
-.cd-legend span{display:inline-flex; align-items:center; gap:6px}
-.cd-legend i{width:12px; height:12px; border-radius:3px; display:inline-block}
-.cd-legend i.cd-dot-oro{background:var(--gold)}
-.cd-legend i.cd-dot-plata{background:var(--plata)}
-.cd-legend i.cd-dot-estimulo{background:var(--coral)}
 </style>
 </head>
 <body>
@@ -179,7 +154,8 @@ const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxXZAUCAKEeR_ygVVJr9
 const ID_PLANILLA_SUB16 = '1qosQZas3b7bpQXRlB21AMk4bATFm88-P5FTnws1gBQM';
 const ID_PLANILLA_SUB14 = '1W22MF_O_DjRzpZWQo78OjjMJeS7hlpTqWaWFBVAoAqs';
 
-const INTERVALO_ACTUALIZACION = 15000; // 15 segundos
+// OPTIMIZACIÓN: Intervalo extendido a 30s. Las llamadas concurrentes agresivas rompen Google Sheets.
+const INTERVALO_ACTUALIZACION = 30000; 
 
 function APP(STATE){
   "use strict";
@@ -187,7 +163,7 @@ function APP(STATE){
   var ui = { view:'torneo', modalidadCategoryId: STATE.activeCategoryId, tvIndex:0 };
   var tvTimer = null;
   var sheetWatchUnsub = null;
-  var sheetStatus = { state:'idle', message:'Conectando a Google Sheets en tiempo real...', lastSync:null };
+  var sheetStatus = { state:'idle', message:'Conectando a Google Sheets...', lastSync:null };
 
   // --- Funciones Helpers para Limpiar Texto y Comparar ---
   function stripAccents(s){
@@ -271,9 +247,6 @@ function APP(STATE){
     if(m.shootoutWinner) return m.shootoutWinner;
     return null;
   }
-  function winnerName(m){ var w=winnerOf(m); return w==='A'?m.teamA:(w==='B'?m.teamB:null); }
-  function loserName(m){ var w=winnerOf(m); if(!w) return null; return w==='A'?m.teamB:m.teamA; }
-
   function computeTier(cat, tier){
     if(!cat.zones.length) return null;
     var allComplete = cat.zones.every(function(z){ return zoneComplete(cat, z.id); });
@@ -321,7 +294,6 @@ function APP(STATE){
   }
 
   function Zp(zoneId, pos, label){ return {src:{k:'zonePos', zoneId:zoneId, pos:pos}, label:label}; }
-  function Tr(tier, rank, label){ return {src:{k:'tier', tier:tier, rank:rank}, label:label}; }
   function Wn(key){ return {src:{k:'win', ref:key}, label:'Ganador P.' + key}; }
   function Ls(key){ return {src:{k:'lose', ref:key}, label:'Perdedor P.' + key}; }
 
@@ -382,7 +354,6 @@ function APP(STATE){
     return null;
   }
 
-  // Crea y actualiza los partidos de llave (Cuartos, Semis, etc)
   function syncPlayoffTeams(cat){
     var specs = buildBracketSpecs(cat);
     if(!specs) return;
@@ -453,7 +424,6 @@ function APP(STATE){
       var teamA = (r['EquipoA']||'').trim();
       var teamB = (r['EquipoB']||'').trim();
       
-      // Leemos Día, Hora y N° para ordenar las tarjetas
       var num = (r['N°']||r['Nro']||r['Nro.']||r['Numero']||r['Partido']||'').trim();
       var diaStr = (r['Día']||r['Dia']||'').trim().toLowerCase();
       var hora = (r['Hora']||'').trim();
@@ -464,20 +434,17 @@ function APP(STATE){
       var cat = STATE.categories.find(function(c){ return eq(c.name, catName); });
       if(!cat) return;
       
-      // Buscamos el partido de manera "inteligente" (limpiando tildes, minúsculas, espacios)
       var matchingMatches = cat.matches.filter(function(x){
         var xA = x.teamA || '';
         var xB = x.teamB || '';
         var match = (eq(xA, teamA) && eq(xB, teamB)) || (eq(xA, teamB) && eq(xB, teamA));
         
-        // Si no enganchó por nombre de equipo, capaz es un partido de playoff que aun dice "1° Zona A"
         if (!match) {
             var slotA = x.slotLabelA || '';
             var slotB = x.slotLabelB || '';
             match = (eq(slotA, teamA) && eq(slotB, teamB)) || (eq(slotA, teamB) && eq(slotB, teamA));
         }
 
-        // Si mandaste la Zona en el excel, nos aseguramos de no actualizar una Final por error
         if (match && zoneName !== "" && x.zoneId) {
            var z = cat.zones.find(function(z) { return z.id === x.zoneId; });
            if (z && !eq(z.name, zoneName)) return false;
@@ -488,13 +455,11 @@ function APP(STATE){
       if(!matchingMatches.length) return;
       var m = matchingMatches[0];
       
-      // --- ACTUALIZAR DATOS DE ORDENAMIENTO (Día, Hora, Número) ---
       var numInt = parseInt(num, 10);
       if(!isNaN(numInt) && m.matchNum !== numInt) { m.matchNum = numInt; m.key = String(numInt); changed = true; }
       if(hora && m.time !== hora) { m.time = hora; changed = true; }
       if(cancha && m.court !== cancha) { m.court = cancha; changed = true; }
       
-      // Traducir el día del Excel al formato del código ('vie', 'sab', 'dom')
       var mappedDay = m.day;
       if(diaStr.includes('vie')) mappedDay = 'vie';
       else if(diaStr.includes('sab') || diaStr.includes('sáb')) mappedDay = 'sab';
@@ -502,7 +467,6 @@ function APP(STATE){
       
       if(mappedDay && m.day !== mappedDay) { m.day = mappedDay; changed = true; }
       
-      // --- ESTADO AUTOMÁTICO BASADO EN GOLES ---
       var gaRaw = (r['GolesA']==null ? '' : String(r['GolesA']).trim());
       var gbRaw = (r['GolesB']==null ? '' : String(r['GolesB']).trim());
       
@@ -516,7 +480,6 @@ function APP(STATE){
       var gaNum = gaRaw==='' ? null : parseInt(gaRaw, 10);
       var gbNum = gbRaw==='' ? null : parseInt(gbRaw, 10);
       
-      // Acomodamos los goles según quién es A y quién B en la base de datos
       var newScoreA = eq(m.teamA || m.slotLabelA, teamA) ? gaNum : gbNum;
       var newScoreB = eq(m.teamA || m.slotLabelA, teamA) ? gbNum : gaNum;
       
@@ -529,18 +492,34 @@ function APP(STATE){
     return changed;
   }
 
+  // OPTIMIZACIÓN: Función segura para leer Google Apps Script y evitar crash por límite de uso
+  async function fetchJSONSafely(id) {
+    try {
+      const response = await fetch(URL_SCRIPT + '?id=' + id + '&t=' + Date.now(), { cache: 'no-store' });
+      if (!response.ok) return { error: `Error HTTP ${response.status}` };
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        console.warn("Respuesta inválida de Google (Probablemente límite de cuota):", text.substring(0, 150));
+        return { error: 'Respuesta inválida de Google. Reintentando luego...' };
+      }
+    } catch(err) {
+      return { error: 'Fallo de red: ' + err.message };
+    }
+  }
+
   async function syncNow() {
     try {
       if(!ID_PLANILLA_SUB16 || !ID_PLANILLA_SUB14) {
-         sheetStatus = { state:'error', message: 'Falta configurar los IDs de las planillas', lastSync: sheetStatus.lastSync };
-         render(); return;
+         sheetStatus = { state:'error', message: 'Falta configurar los IDs', lastSync: sheetStatus.lastSync };
+         renderPartial(); return;
       }
 
-      // Hacemos las peticiones INDEPENDIENTES para que si una falla, la otra siga viva
-      const fetch16 = fetch(URL_SCRIPT + '?id=' + ID_PLANILLA_SUB16 + '&t=' + Date.now()).then(r => r.json()).catch(e => ({error: 'Fallo de red'}));
-      const fetch14 = fetch(URL_SCRIPT + '?id=' + ID_PLANILLA_SUB14 + '&t=' + Date.now()).then(r => r.json()).catch(e => ({error: 'Fallo de red'}));
-      
-      const [rows16, rows14] = await Promise.all([fetch16, fetch14]);
+      // OPTIMIZACIÓN: Llamadas secuenciales en lugar de Promise.all()
+      // Esto evita que Google Apps Script devuelva error "Service invoked too many times"
+      const rows16 = await fetchJSONSafely(ID_PLANILLA_SUB16);
+      const rows14 = await fetchJSONSafely(ID_PLANILLA_SUB14);
       
       let allRows = [];
       let hasErrors = false;
@@ -550,38 +529,49 @@ function APP(STATE){
         rows16.forEach(r => r['Categoria'] = 'Sub 16');
         allRows = allRows.concat(rows16);
       } else {
-        hasErrors = true; errMsg += "Sub16 falló. ";
+        hasErrors = true; errMsg += "Sub16: " + (rows16.error || 'falló') + ". ";
       }
       
       if(rows14 && !rows14.error && Array.isArray(rows14)) {
         rows14.forEach(r => r['Categoria'] = 'Sub 14');
         allRows = allRows.concat(rows14);
       } else {
-        hasErrors = true; errMsg += "Sub14 falló. ";
+        hasErrors = true; errMsg += "Sub14: " + (rows14.error || 'falló') + ". ";
       }
       
-      applySheetRows(allRows);
+      let isDataChanged = applySheetRows(allRows);
       
-      // Siempre forzamos el refresco para dibujar las Copas/Llaves aunque no cambien los goles
+      // Guardamos snapshot previo para ver si cambiaron posiciones
+      let priorDataState = JSON.stringify(STATE.categories);
+      
       STATE.updatedAt = new Date().toISOString();
       STATE.categories.forEach(c => refreshCategory(c));
+
+      let hasBracketChanges = priorDataState !== JSON.stringify(STATE.categories);
       
       if (hasErrors) {
-        sheetStatus = { state:'error', message: 'Sync con errores: ' + errMsg, lastSync: new Date().toISOString() };
+        sheetStatus = { state:'error', message: 'Problemas al sincronizar: ' + errMsg, lastSync: sheetStatus.lastSync || STATE.updatedAt };
+        renderPartial(); // Actualiza barra superior para avisar del error
       } else {
-        sheetStatus = { state:'ok', message: 'Sincronizado en tiempo real', lastSync: new Date().toISOString() };
+        sheetStatus = { state:'ok', message: 'Sincronizado en tiempo real', lastSync: STATE.updatedAt };
+        
+        // OPTIMIZACIÓN: Solo reconstruimos el DOM pesado si hubo goles o llaves nuevas
+        if (isDataChanged || hasBracketChanges) {
+           render();
+        } else {
+           renderPartial(); // Si solo pasó el tiempo, solo refresca la barra superior
+        }
       }
-      render();
     } catch(err) {
-      console.error(err);
-      sheetStatus = { state:'error', message: 'Error general de conexión', lastSync: sheetStatus.lastSync };
-      render();
+      console.error("Error crítico de sync:", err);
+      sheetStatus = { state:'error', message: 'Error de red general', lastSync: sheetStatus.lastSync };
+      renderPartial();
     }
   }
 
   function startSheetWatch(){
     if(sheetWatchUnsub) return;
-    syncNow();
+    setTimeout(syncNow, 1000); // Llama después de mostrar la UI inicial rápido
     sheetWatchUnsub = setInterval(syncNow, INTERVALO_ACTUALIZACION);
   }
 
@@ -642,7 +632,6 @@ function APP(STATE){
     if(!matches.length) return '<p class="empty-note">No hay partidos cargados.</p>';
     var zoneName = {}; cat.zones.forEach(function(z){ zoneName[z.id] = z.name; });
     
-    // AGRUPAMIENTO Y ORDEN CRONOLÓGICO RESTAURADO
     var byDay = {};
     matches.forEach(function(m){ var d = m.day || ''; (byDay[d] = byDay[d] || []).push(m); });
     var days = Object.keys(byDay).sort(function(a,b){ return dayIndex(a) - dayIndex(b); });
@@ -656,22 +645,6 @@ function APP(STATE){
       return '<div class="day-block"><h3 class="day-title">' + esc(dayLabel(d)) + '</h3>' +
         '<div class="match-grid">' + list.map(function(m){ return renderMatchCard(m, zoneName[m.zoneId]); }).join('') + '</div></div>';
     }).join('');
-  }
-
-  function renderBracketMatchByKey(cat, key){
-    var m = cat.matches.find(function(x){ return x.key===key; });
-    if(!m) return '<div class="bracket-slot"><div class="match-row"><span class="match-team">A definir</span></div><div class="match-row"><span class="match-team">A definir</span></div></div>';
-    var winner = winnerOf(m), scoreA = m.scoreA==null ? '' : m.scoreA, scoreB = m.scoreB==null ? '' : m.scoreB;
-    var statusHtml = m.status==='vivo' ? '<span class="live-dot"></span> En vivo' : statusLabel(m.status);
-    var metaBits = [];
-    if(m.day) metaBits.push(dayLabel(m.day));
-    if(m.time) metaBits.push(m.time);
-    return '<div class="bracket-slot">' +
-      (m.status!=='pendiente' ? '<div class="match-status ' + m.status + '">' + statusHtml + '</div>' : '') +
-      '<div class="match-row' + (winner==='A'?' win':'') + '"><span class="match-team">' + esc(m.teamA || m.slotLabelA || 'A definir') + '</span><span class="match-score tabular">' + scoreA + '</span></div>' +
-      '<div class="match-row' + (winner==='B'?' win':'') + '"><span class="match-team">' + esc(m.teamB || m.slotLabelB || 'A definir') + '</span><span class="match-score tabular">' + scoreB + '</span></div>' +
-      (metaBits.length ? '<div class="match-meta"><span>' + esc(metaBits.join(' · ')) + '</span></div>' : '') +
-    '</div>';
   }
 
   function renderStandingsGenericTable(rows, startPos){
@@ -696,7 +669,6 @@ function APP(STATE){
     var matches = cat.matches.filter(function(m){ return m.stage==='bracket'; });
     if(!matches.length) return '<p class="empty-note">No hay partidos de cruces cargados.</p>';
     
-    // AGRUPAMIENTO Y ORDEN CRONOLÓGICO PARA CRUCES/COPAS
     var byDay = {};
     matches.forEach(function(m){ var d = m.day || ''; (byDay[d] = byDay[d] || []).push(m); });
     var days = Object.keys(byDay).sort(function(a,b){ return dayIndex(a) - dayIndex(b); });
@@ -723,7 +695,9 @@ function APP(STATE){
   function renderScorebar(){
     var liveCount = 0;
     STATE.categories.forEach(function(c){ c.matches.forEach(function(m){ if(m.status==='vivo') liveCount++; }); });
-    return '<div class="scorebar"><div class="scorebar-inner">' +
+    var isErr = sheetStatus.state === 'error';
+    var syncColor = isErr ? 'color: var(--coral);' : '';
+    return '<div class="scorebar-inner">' +
       '<div class="brand-block">' +
         (STATE.sponsorLogo ? '<img class="sponsor-logo" src="' + STATE.sponsorLogo + '" alt="Organiza">' : '') +
         '<div><p class="brand-eyebrow">Marcador en vivo</p><h1 class="brand-title">' + esc(STATE.tournamentName) + '</h1>' +
@@ -731,14 +705,14 @@ function APP(STATE){
       '</div>' +
       '<div class="scorebar-meta">' +
         (liveCount>0 ? '<span class="live-chip"><span class="live-dot"></span>' + liveCount + ' en vivo</span>' : '') +
-        '<span class="updated-chip">Última sync: ' + (sheetStatus.lastSync ? fmtUpdated(sheetStatus.lastSync) : '...') + '</span>' +
+        '<span class="updated-chip" style="' + syncColor + '" title="' + esc(sheetStatus.message) + '">Última sync: ' + (sheetStatus.lastSync ? fmtUpdated(sheetStatus.lastSync) : 'Conectando...') + (isErr?' (Error)':'') + '</span>' +
         '<button class="tv-btn" data-action="toggle-tv" type="button">' + (document.body.classList.contains('tv-mode') ? 'Salir de modo pantalla' : 'Modo pantalla') + '</button>' +
       '</div></div>' +
       '<div class="tabbar">' + STATE.categories.map(function(c){
         return '<button class="tab" role="tab" aria-selected="' + (c.id===STATE.activeCategoryId && ui.view==='torneo') + '" data-action="switch-category" data-id="' + c.id + '" type="button">' + esc(c.name) + '</button>';
       }).join('') +
       '<button class="tab tab-info" role="tab" aria-selected="' + (ui.view==='modalidad') + '" data-action="show-modalidad" type="button">¿Cómo se juega?</button>' +
-    '</div></div>';
+    '</div>';
   }
 
   function renderMain(){
@@ -779,9 +753,21 @@ function APP(STATE){
            '<div class="mod-card"><div class="mod-step">3</div><div class="mod-copy"><h4>Playoffs (Oro y Plata)</h4><p>Juegan cuartos de final, semis y final. Quienes pierden sus partidos también siguen jugando para definir los puestos de más abajo.</p></div></div>';
   }
 
+  // Render completo de toda la página
   function render(){
     var app = document.getElementById('app');
-    if(app) app.innerHTML = renderScorebar() + renderMain();
+    if(app) app.innerHTML = '<div class="scorebar">' + renderScorebar() + '</div>' + renderMain();
+  }
+
+  // OPTIMIZACIÓN: Solo renderizar la barra de estado superior para evitar parpadeos visuales ("titila" la app)
+  function renderPartial(){
+    var app = document.getElementById('app');
+    if(app){
+       var scorebarNode = app.querySelector('.scorebar');
+       var bannerNode = app.querySelector('.readonly-banner');
+       if(scorebarNode) scorebarNode.innerHTML = renderScorebar();
+       if(bannerNode) bannerNode.innerHTML = '<span class="dot"></span> ' + esc(sheetStatus.message);
+    }
   }
 
   document.addEventListener('click', function(e){
@@ -803,7 +789,7 @@ function APP(STATE){
     }
   });
 
-  // BOOT: Armamos copas al inicio SIEMPRE, luego dibujamos, luego conectamos a Google Sheets.
+  // BOOT: Armamos copas al inicio SIEMPRE, luego dibujamos velozmente, luego conectamos a Google Sheets.
   STATE.categories.forEach(c => refreshCategory(c));
   render();
   startSheetWatch();
